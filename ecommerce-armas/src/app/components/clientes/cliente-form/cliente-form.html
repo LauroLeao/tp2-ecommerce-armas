@@ -1,0 +1,164 @@
+<nav class="breadcrumb" aria-label="Caminho da página">
+  <a routerLink="/clientes">Clientes</a>
+  <mat-icon svgIcon="chevron_right"></mat-icon>
+  <span>{{ editando ? 'Editar cliente' : 'Cadastro' }}</span>
+</nav>
+
+<div class="page-heading">
+  <div>
+    <h1>{{ editando ? 'Editar cliente' : 'Cadastro de cliente' }}</h1>
+    <p>
+      {{
+        editando
+          ? 'Atualize as informações do cliente.'
+          : 'Preencha os dados para cadastrar um novo cliente na loja.'
+      }}
+    </p>
+  </div>
+</div>
+
+<form [formGroup]="formGroup" (ngSubmit)="salvar()" [attr.aria-busy]="salvando || excluindo">
+  <div class="form-layout">
+    <section class="panel">
+      <div class="panel-heading">
+        <h2 class="section-title"><mat-icon svgIcon="person_outline"></mat-icon>Dados pessoais</h2>
+        <p class="section-description">Informações de identificação e contato do cliente.</p>
+      </div>
+      <div class="panel-body">
+        <div class="form-grid">
+          <mat-form-field appearance="outline" class="field-wide">
+            <mat-label>Nome completo</mat-label>
+            <input
+              matInput
+              formControlName="nome"
+              placeholder="Digite o nome completo"
+              autocomplete="name"
+            />
+            @if (formGroup.get('nome')?.hasError('required')) {
+              <mat-error>Informe o nome do cliente.</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>E-mail</mat-label>
+            <input
+              matInput
+              type="email"
+              formControlName="email"
+              placeholder="exemplo@email.com"
+              autocomplete="email"
+            />
+            @if (formGroup.get('email')?.hasError('required')) {
+              <mat-error>Informe o e-mail.</mat-error>
+            } @else if (formGroup.get('email')?.hasError('email')) {
+              <mat-error>Informe um e-mail válido.</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Telefone</mat-label>
+            <input
+              matInput
+              type="tel"
+              formControlName="telefone"
+              placeholder="(00) 00000-0000"
+              autocomplete="tel"
+            />
+            @if (formGroup.get('telefone')?.hasError('required')) {
+              <mat-error>Informe o telefone.</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="field-wide">
+            <mat-label>Endereço</mat-label>
+            <textarea
+              matInput
+              formControlName="endereco"
+              placeholder="Rua, número, bairro e cidade"
+              autocomplete="street-address"
+              rows="3"
+            ></textarea>
+            @if (formGroup.get('endereco')?.hasError('required')) {
+              <mat-error>Informe o endereço.</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        @if (erro) {
+          <div class="feedback error" role="alert">
+            <mat-icon svgIcon="error_outline"></mat-icon><span>{{ erro }}</span>
+          </div>
+        }
+
+        <div class="form-actions">
+          @if (editando) {
+            <button
+              mat-stroked-button
+              type="button"
+              class="danger-button delete-client"
+              (click)="excluir()"
+              [disabled]="salvando || excluindo"
+            >
+              <mat-icon svgIcon="delete_outline"></mat-icon
+              >{{ excluindo ? 'Excluindo...' : 'Excluir cliente' }}
+            </button>
+          }
+          <button
+            mat-stroked-button
+            type="button"
+            class="secondary-button"
+            routerLink="/clientes"
+            [disabled]="salvando || excluindo"
+          >
+            <mat-icon svgIcon="close"></mat-icon>Cancelar
+          </button>
+          <button
+            mat-flat-button
+            type="submit"
+            class="primary-button"
+            [disabled]="formGroup.invalid || salvando || excluindo"
+          >
+            <mat-icon svgIcon="save"></mat-icon
+            >{{ salvando ? 'Salvando...' : editando ? 'Salvar alterações' : 'Cadastrar cliente' }}
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <aside class="panel client-preview" aria-label="Resumo do cliente">
+      <div class="panel-heading"><h2 class="section-title">Resumo do cliente</h2></div>
+      <div class="panel-body">
+        <div class="preview-identity">
+          <span class="person-avatar preview-avatar" aria-hidden="true">
+            @if (formGroup.get('nome')?.value?.trim()) {
+              {{ iniciais }}
+            } @else {
+              <mat-icon svgIcon="person_outline"></mat-icon>
+            }
+          </span>
+          <h3>{{ formGroup.get('nome')?.value || 'Nome do cliente' }}</h3>
+          <span class="record-meta">{{
+            editando ? 'Cliente #' + formGroup.get('id')?.value : 'Novo cadastro'
+          }}</span>
+        </div>
+        <dl class="preview-details">
+          <div>
+            <dt><mat-icon svgIcon="mail_outline"></mat-icon>E-mail</dt>
+            <dd>{{ formGroup.get('email')?.value || 'Não informado' }}</dd>
+          </div>
+          <div>
+            <dt><mat-icon svgIcon="phone"></mat-icon>Telefone</dt>
+            <dd>{{ formGroup.get('telefone')?.value || 'Não informado' }}</dd>
+          </div>
+          <div>
+            <dt><mat-icon svgIcon="location_on"></mat-icon>Endereço</dt>
+            <dd>{{ formGroup.get('endereco')?.value || 'Não informado' }}</dd>
+          </div>
+        </dl>
+        <p class="preview-note">
+          <mat-icon svgIcon="info_outline"></mat-icon>Confira os dados antes de salvar o cadastro.
+        </p>
+      </div>
+    </aside>
+  </div>
+</form>

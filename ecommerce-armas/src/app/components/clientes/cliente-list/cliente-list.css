@@ -1,0 +1,54 @@
+:host {
+  display: block;
+}
+.client-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+.client-count mat-icon {
+  font-size: 19px;
+  height: 19px;
+  width: 19px;
+}
+.client-code {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+.client-contact {
+  color: #c4c5ca;
+  font-size: 0.84rem;
+}
+.client-address {
+  display: block;
+  min-width: 130px;
+  max-width: 260px;
+  color: #c4c5ca;
+  font-size: 0.84rem;
+  padding: 12px 0;
+}
+.mat-column-numero {
+  width: 82px;
+}
+.mat-column-nome {
+  min-width: 210px;
+}
+.mat-column-acao {
+  width: 110px;
+}
+.table-footer {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+.feedback button {
+  margin-left: auto;
+  white-space: nowrap;
+}
+@media (max-width: 700px) {
+  .client-count {
+    font-size: 0.76rem;
+  }
+}

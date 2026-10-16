@@ -1,0 +1,124 @@
+<div class="page-heading">
+  <div>
+    <span class="eyebrow">Área administrativa</span>
+    <h1>Gerenciamento de clientes</h1>
+    <p>Consulte e mantenha os dados dos clientes da loja.</p>
+  </div>
+  <button mat-flat-button class="primary-button" routerLink="/clientes/new">
+    <mat-icon svgIcon="add"></mat-icon>Novo cliente
+  </button>
+</div>
+
+<section class="panel" aria-label="Clientes cadastrados" [attr.aria-busy]="carregando">
+  <div class="table-toolbar">
+    <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
+      <mat-label>Buscar cliente</mat-label>
+      <mat-icon matPrefix svgIcon="search"></mat-icon>
+      <input
+        matInput
+        (input)="aplicarFiltro($event)"
+        placeholder="Nome ou e-mail"
+        aria-label="Buscar cliente por nome ou e-mail"
+      />
+    </mat-form-field>
+    <span class="client-count"
+      ><mat-icon svgIcon="group"></mat-icon>{{ dataSource.data.length }} clientes cadastrados</span
+    >
+  </div>
+
+  @if (erro) {
+    <div class="feedback error" role="alert">
+      <mat-icon svgIcon="error_outline"></mat-icon><span>{{ erro }}</span>
+      <button mat-button (click)="carregarClientes()">Tentar novamente</button>
+    </div>
+  }
+
+  <div class="table-scroll">
+    <table mat-table [dataSource]="dataSource">
+      <ng-container matColumnDef="numero">
+        <th mat-header-cell *matHeaderCellDef>Código</th>
+        <td mat-cell *matCellDef="let cliente">
+          <span class="client-code">#{{ cliente.id }}</span>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="nome">
+        <th mat-header-cell *matHeaderCellDef>Cliente</th>
+        <td mat-cell *matCellDef="let cliente">
+          <div class="record-cell">
+            <span class="person-avatar" aria-hidden="true">{{ iniciais(cliente.nome) }}</span>
+            <span class="record-name">{{ cliente.nome }}</span>
+          </div>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="email">
+        <th mat-header-cell *matHeaderCellDef>E-mail</th>
+        <td mat-cell *matCellDef="let cliente">
+          <span class="client-contact">{{ cliente.email }}</span>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="telefone">
+        <th mat-header-cell *matHeaderCellDef>Telefone</th>
+        <td mat-cell *matCellDef="let cliente">
+          <span class="client-contact">{{ cliente.telefone }}</span>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="endereco">
+        <th mat-header-cell *matHeaderCellDef>Endereço</th>
+        <td mat-cell *matCellDef="let cliente">
+          <span class="client-address">{{ cliente.endereco }}</span>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="acao">
+        <th mat-header-cell *matHeaderCellDef>Ações</th>
+        <td mat-cell *matCellDef="let cliente">
+          <div class="row-actions">
+            <button
+              mat-icon-button
+              [routerLink]="['/clientes/edit', cliente.id]"
+              [attr.aria-label]="'Editar ' + cliente.nome"
+              [title]="'Editar ' + cliente.nome"
+            >
+              <mat-icon svgIcon="edit"></mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              class="danger-button"
+              (click)="excluir(cliente.id)"
+              [disabled]="excluindoId === cliente.id"
+              [attr.aria-label]="'Excluir ' + cliente.nome"
+              [title]="'Excluir ' + cliente.nome"
+            >
+              <mat-icon svgIcon="delete_outline"></mat-icon>
+            </button>
+          </div>
+        </td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+  </div>
+
+  @if (carregando) {
+    <div class="empty-state" role="status">
+      <mat-icon svgIcon="hourglass_empty"></mat-icon>
+      <p>Carregando clientes...</p>
+    </div>
+  } @else if (!erro && dataSource.filteredData.length === 0) {
+    <div class="empty-state" role="status">
+      <mat-icon svgIcon="person_search"></mat-icon>
+      <h3>
+        {{ dataSource.data.length ? 'Nenhum cliente encontrado' : 'Nenhum cliente cadastrado' }}
+      </h3>
+      <p>
+        {{
+          dataSource.data.length
+            ? 'Tente buscar por outro nome ou e-mail.'
+            : 'Use Novo cliente para começar o cadastro.'
+        }}
+      </p>
+    </div>
+  }
+  <div class="table-footer">
+    <span>{{ dataSource.filteredData.length }} de {{ dataSource.data.length }} clientes</span>
+  </div>
+</section>

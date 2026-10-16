@@ -1,0 +1,285 @@
+<nav class="breadcrumb" aria-label="Caminho da página">
+  <a routerLink="/produtos">Produtos</a>
+  <mat-icon aria-hidden="true" svgIcon="chevron_right"></mat-icon>
+  <span>{{ editando ? 'Editar produto' : 'Cadastro de produto' }}</span>
+</nav>
+
+<header class="page-heading">
+  <div>
+    <span class="eyebrow">INVENTÁRIO DA LOJA</span>
+    <h1>{{ editando ? 'Editar produto' : 'Cadastro de produto' }}</h1>
+    <p>
+      {{
+        editando
+          ? 'Atualize as informações do produto no seu inventário.'
+          : 'Cadastre novos produtos no inventário da loja.'
+      }}
+    </p>
+  </div>
+</header>
+
+<form [formGroup]="formGroup" (ngSubmit)="salvar()">
+  <div class="form-layout">
+    <section class="panel product-fields" aria-labelledby="informacoes-produto">
+      <div class="panel-heading">
+        <h2 id="informacoes-produto" class="section-title">Informações gerais</h2>
+        <span class="required-note">* Campos obrigatórios</span>
+      </div>
+      <div class="panel-body">
+        <div class="form-grid">
+          <mat-form-field appearance="outline" class="field-wide">
+            <mat-label>Nome do produto</mat-label>
+            <input
+              matInput
+              formControlName="nome"
+              placeholder="Informe o nome do produto"
+              required
+            />
+            <mat-error>Informe o nome do produto.</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="field-wide">
+            <mat-label>Categoria</mat-label>
+            <mat-select formControlName="categoriaId" required>
+              @for (categoria of categorias; track categoria.id) {
+                <mat-option [value]="categoria.id">{{ categoria.nome }}</mat-option>
+              }
+            </mat-select>
+            <mat-hint>{{
+              carregandoCategorias ? 'Carregando categorias…' : 'Selecione a categoria do produto.'
+            }}</mat-hint>
+            <mat-error>Selecione uma categoria.</mat-error>
+          </mat-form-field>
+
+          <div class="field-wide category-area">
+            <details class="category-details">
+              <summary>
+                <mat-icon aria-hidden="true" svgIcon="add_circle_outline"></mat-icon> Cadastrar uma
+                categoria
+              </summary>
+              <div class="new-category">
+                <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                  <mat-label>Nome da categoria</mat-label>
+                  <input
+                    matInput
+                    #novaCategoria
+                    maxlength="80"
+                    placeholder="Ex.: Acessórios"
+                    (keydown.enter)="$event.preventDefault(); adicionarCategoria(novaCategoria)"
+                  />
+                </mat-form-field>
+                <button
+                  type="button"
+                  mat-stroked-button
+                  class="secondary-button"
+                  [disabled]="cadastrandoCategoria || ocupado"
+                  (click)="adicionarCategoria(novaCategoria)"
+                >
+                  <mat-icon svgIcon="add"></mat-icon
+                  >{{ cadastrandoCategoria ? 'Cadastrando…' : 'Adicionar' }}
+                </button>
+              </div>
+            </details>
+            @if (erroCategoria) {
+              <p class="feedback error category-feedback" role="alert">{{ erroCategoria }}</p>
+            }
+          </div>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Preço (R$)</mat-label>
+            <input
+              matInput
+              type="number"
+              min="0"
+              step="0.01"
+              formControlName="preco"
+              placeholder="0,00"
+              required
+            />
+            <mat-error>Informe um preço igual ou maior que zero.</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Estoque</mat-label>
+            <input
+              matInput
+              type="number"
+              min="0"
+              step="1"
+              formControlName="estoque"
+              placeholder="0"
+              required
+            />
+            <mat-error>Informe uma quantidade inteira igual ou maior que zero.</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="field-wide description-field">
+            <mat-label>Descrição</mat-label>
+            <textarea
+              matInput
+              formControlName="descricao"
+              rows="6"
+              placeholder="Descreva as características e informações do produto."
+            ></textarea>
+            <mat-hint>Opcional</mat-hint>
+          </mat-form-field>
+        </div>
+
+        <section class="product-image-section" aria-labelledby="imagem-produto">
+          <h3 id="imagem-produto">Imagem do produto</h3>
+          <p>Opcional. Escolha uma foto JPG ou PNG de até 5 MB.</p>
+          <input
+            #arquivoImagem
+            type="file"
+            accept="image/jpeg,image/png"
+            hidden
+            (change)="selecionarImagem($event)"
+          />
+          <div class="image-upload">
+            <div class="upload-thumbnail">
+              @if (imagemPreview()) {
+                <img [src]="imagemPreview()" alt="Imagem selecionada para o produto" />
+              } @else {
+                <mat-icon svgIcon="inventory_2" aria-hidden="true"></mat-icon>
+              }
+            </div>
+            <div class="upload-details">
+              <span class="upload-filename">{{
+                nomeImagem() || 'Nenhuma imagem selecionada'
+              }}</span>
+              <div class="upload-actions">
+                <button
+                  mat-stroked-button
+                  type="button"
+                  (click)="arquivoImagem.click()"
+                  [disabled]="ocupado || carregandoImagem()"
+                >
+                  <mat-icon svgIcon="add"></mat-icon
+                  >{{ imagemPreview() ? 'Trocar imagem' : 'Selecionar imagem' }}
+                </button>
+                @if (imagemPreview()) {
+                  <button
+                    mat-button
+                    type="button"
+                    class="danger-button"
+                    (click)="retirarImagem()"
+                    [disabled]="ocupado || carregandoImagem()"
+                  >
+                    <mat-icon svgIcon="delete_outline"></mat-icon>Remover imagem
+                  </button>
+                }
+              </div>
+              <small aria-live="polite">{{
+                carregandoImagem()
+                  ? 'Preparando imagem...'
+                  : 'As alterações na imagem são aplicadas ao salvar o produto.'
+              }}</small>
+            </div>
+          </div>
+          @if (erroImagem()) {
+            <p class="feedback error" role="alert">{{ erroImagem() }}</p>
+          }
+        </section>
+      </div>
+    </section>
+
+    <aside class="panel product-preview" aria-labelledby="preview-produto">
+      <div class="panel-heading">
+        <h2 id="preview-produto" class="section-title">Pré-visualização do produto</h2>
+      </div>
+      <div class="panel-body">
+        <div class="preview-placeholder">
+          @if (imagemPreview()) {
+            <img [src]="imagemPreview()" [alt]="nomePreview" />
+          } @else {
+            <mat-icon svgIcon="inventory_2" aria-hidden="true"></mat-icon>
+          }
+        </div>
+        <h3 class="preview-title">{{ nomePreview }}</h3>
+        <p class="preview-category">{{ categoriaPreview }}</p>
+        <p class="preview-price">{{ precoPreview }}</p>
+        <div class="preview-stock">
+          <span class="status-badge" [class.unavailable]="estoquePreview === 0">
+            {{ estoquePreview > 0 ? 'Em estoque' : 'Sem estoque' }}
+          </span>
+          <span>{{ estoquePreview }} {{ estoquePreview === 1 ? 'unidade' : 'unidades' }}</span>
+        </div>
+        <div class="preview-summary">
+          <h3>Resumo do produto</h3>
+          <dl>
+            @if (editando) {
+              <div>
+                <dt>Código</dt>
+                <dd>#{{ formGroup.get('id')?.value }}</dd>
+              </div>
+            }
+            <div>
+              <dt>Categoria</dt>
+              <dd>{{ categoriaPreview }}</dd>
+            </div>
+            <div>
+              <dt>Preço unitário</dt>
+              <dd>{{ precoPreview }}</dd>
+            </div>
+            <div>
+              <dt>Estoque</dt>
+              <dd>{{ estoquePreview }}</dd>
+            </div>
+          </dl>
+        </div>
+        <p class="preview-note">
+          <mat-icon aria-hidden="true" svgIcon="info_outline"></mat-icon>Confira os dados antes de
+          salvar. O resumo acompanha o preenchimento do formulário.
+        </p>
+      </div>
+    </aside>
+  </div>
+
+  @if (erro) {
+    <p class="feedback error submit-feedback" role="alert">{{ erro }}</p>
+  }
+
+  <footer class="panel product-footer">
+    @if (editando) {
+      <button
+        type="button"
+        mat-stroked-button
+        class="danger-button"
+        [disabled]="ocupado"
+        (click)="excluir()"
+      >
+        <mat-icon svgIcon="delete_outline"></mat-icon
+        >{{ excluindo ? 'Excluindo…' : 'Excluir produto' }}
+      </button>
+    }
+    <div class="form-actions">
+      <button
+        type="button"
+        mat-stroked-button
+        class="secondary-button"
+        routerLink="/produtos"
+        [disabled]="ocupado"
+      >
+        <mat-icon svgIcon="close"></mat-icon>Cancelar
+      </button>
+      <button
+        type="button"
+        mat-stroked-button
+        class="secondary-button"
+        (click)="limpar()"
+        [disabled]="ocupado"
+      >
+        <mat-icon svgIcon="restart_alt"></mat-icon>Limpar campos
+      </button>
+      <button
+        type="submit"
+        mat-flat-button
+        class="primary-button"
+        [disabled]="ocupado || cadastrandoCategoria || carregandoImagem()"
+      >
+        <mat-icon svgIcon="save"></mat-icon
+        >{{ salvando ? 'Salvando…' : editando ? 'Salvar alterações' : 'Salvar produto' }}
+      </button>
+    </div>
+  </footer>
+</form>

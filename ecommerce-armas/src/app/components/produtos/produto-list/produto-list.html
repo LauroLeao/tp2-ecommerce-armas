@@ -1,0 +1,191 @@
+<header class="page-heading">
+  <div>
+    <span class="eyebrow">ESTOQUE &amp; CATÁLOGO</span>
+    <h1>Gerenciamento de produtos</h1>
+    <p>Organize os produtos, acompanhe o estoque e mantenha seu catálogo atualizado.</p>
+  </div>
+  <a mat-flat-button class="primary-button" routerLink="/produtos/new"
+    ><mat-icon svgIcon="add"></mat-icon>Novo produto</a
+  >
+</header>
+
+<section class="summary-grid" aria-label="Resumo dos produtos">
+  <article class="summary-card">
+    <span class="summary-icon"><mat-icon svgIcon="inventory_2"></mat-icon></span>
+    <div>
+      <span class="summary-label">{{
+        filtroNome ? 'Produtos encontrados' : 'Produtos cadastrados'
+      }}</span
+      ><strong>{{ carregando ? '—' : totalItems }}</strong
+      ><small>{{ filtroNome ? 'Resultado da sua busca' : 'Total de produtos no catálogo' }}</small>
+    </div>
+  </article>
+  <article class="summary-card">
+    <span class="summary-icon green"><mat-icon svgIcon="check_circle_outline"></mat-icon></span>
+    <div>
+      <span class="summary-label">Em estoque</span
+      ><strong>{{ carregando ? '—' : comEstoque }}</strong
+      ><small>Produtos nesta página</small>
+    </div>
+  </article>
+  <article class="summary-card">
+    <span class="summary-icon amber"><mat-icon svgIcon="inventory"></mat-icon></span>
+    <div>
+      <span class="summary-label">Sem estoque</span
+      ><strong>{{ carregando ? '—' : semEstoque }}</strong
+      ><small>Produtos nesta página</small>
+    </div>
+  </article>
+</section>
+
+<section class="panel" aria-label="Lista de produtos" [attr.aria-busy]="carregando">
+  <div class="panel-heading">
+    <h2>Todos os produtos</h2>
+    <span class="list-count">{{ totalItems }} {{ totalItems === 1 ? 'produto' : 'produtos' }}</span>
+  </div>
+  <div class="table-toolbar">
+    <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
+      <mat-label>Buscar produto pelo nome</mat-label
+      ><mat-icon matPrefix svgIcon="search"></mat-icon>
+      <input
+        matInput
+        #nomeBusca
+        (keyup.enter)="buscar(nomeBusca.value)"
+        placeholder="Digite o nome do produto"
+      />
+    </mat-form-field>
+    <button
+      mat-flat-button
+      class="primary-button"
+      (click)="buscar(nomeBusca.value)"
+      [disabled]="carregando"
+    >
+      <mat-icon svgIcon="filter_list"></mat-icon>Buscar
+    </button>
+    <button
+      mat-stroked-button
+      class="secondary-button"
+      (click)="limparFiltro(nomeBusca)"
+      [disabled]="carregando"
+    >
+      <mat-icon svgIcon="restart_alt"></mat-icon>Limpar
+    </button>
+  </div>
+  @if (erro) {
+    <div class="feedback error" role="alert">
+      <mat-icon svgIcon="error_outline"></mat-icon><span>{{ erro }}</span
+      ><button mat-button (click)="carregarProdutos()">Tentar novamente</button>
+    </div>
+  }
+  @if (carregando) {
+    <div class="empty-state" role="status">
+      <mat-icon svgIcon="hourglass_top"></mat-icon>
+      <p>Carregando produtos...</p>
+    </div>
+  } @else if (produtos.length) {
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Tabela de produtos">
+      <table mat-table [dataSource]="produtos">
+        <ng-container matColumnDef="codigo"
+          ><th mat-header-cell *matHeaderCellDef>Código</th>
+          <td mat-cell *matCellDef="let obj">
+            <span class="product-code">#{{ obj.id }}</span>
+          </td></ng-container
+        >
+        <ng-container matColumnDef="nome"
+          ><th mat-header-cell *matHeaderCellDef>Produto</th>
+          <td mat-cell *matCellDef="let obj">
+            <div class="record-cell">
+              <span class="product-symbol">
+                @if (imagemUrl(obj); as foto) {
+                  <img [src]="foto" [alt]="obj.nome" loading="lazy" />
+                } @else {
+                  <mat-icon svgIcon="inventory_2"></mat-icon>
+                }
+              </span>
+              <div>
+                <span class="record-name">{{ obj.nome }}</span>
+                @if (obj.descricao) {
+                  <span class="record-meta product-description" [title]="obj.descricao">{{
+                    obj.descricao
+                  }}</span>
+                }
+              </div>
+            </div>
+          </td></ng-container
+        >
+        <ng-container matColumnDef="categoria"
+          ><th mat-header-cell *matHeaderCellDef>Categoria</th>
+          <td mat-cell *matCellDef="let obj">
+            <span class="category-tag">{{ obj.categoriaNome }}</span>
+          </td></ng-container
+        >
+        <ng-container matColumnDef="preco"
+          ><th mat-header-cell *matHeaderCellDef>Preço</th>
+          <td mat-cell *matCellDef="let obj">
+            <span class="price">{{ obj.preco | currency: 'BRL' : 'symbol' : '1.2-2' }}</span>
+          </td></ng-container
+        >
+        <ng-container matColumnDef="estoque"
+          ><th mat-header-cell *matHeaderCellDef>Estoque</th>
+          <td mat-cell *matCellDef="let obj">
+            {{ obj.estoque }} <span class="units">un.</span>
+          </td></ng-container
+        >
+        <ng-container matColumnDef="status"
+          ><th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let obj">
+            <span class="status-badge" [class.unavailable]="obj.estoque <= 0">{{
+              obj.estoque > 0 ? 'Em estoque' : 'Sem estoque'
+            }}</span>
+          </td></ng-container
+        >
+        <ng-container matColumnDef="acao"
+          ><th mat-header-cell *matHeaderCellDef>Ações</th>
+          <td mat-cell *matCellDef="let obj">
+            <div class="row-actions">
+              <a
+                mat-icon-button
+                [routerLink]="['/produtos/edit', obj.id]"
+                [attr.aria-label]="'Editar ' + obj.nome"
+                title="Editar produto"
+                ><mat-icon svgIcon="edit"></mat-icon></a
+              ><button
+                mat-icon-button
+                color="warn"
+                (click)="excluir(obj)"
+                [disabled]="!!excluindoId"
+                [attr.aria-label]="'Excluir ' + obj.nome"
+                title="Excluir produto"
+              >
+                <mat-icon svgIcon="delete_outline"></mat-icon>
+              </button>
+            </div></td
+        ></ng-container>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+    </div>
+  } @else if (!erro) {
+    <div class="empty-state">
+      <mat-icon svgIcon="search_off"></mat-icon>
+      <h3>{{ filtroNome ? 'Nenhum produto encontrado' : 'Seu catálogo começa aqui' }}</h3>
+      <p>
+        {{
+          filtroNome
+            ? 'Tente buscar por outro nome ou limpe o filtro.'
+            : 'Cadastre o primeiro produto para começar.'
+        }}
+      </p>
+    </div>
+  }
+  <mat-paginator
+    [length]="totalItems"
+    [pageIndex]="page"
+    [pageSize]="pageSize"
+    [pageSizeOptions]="[5, 10, 20]"
+    [disabled]="carregando"
+    (page)="mudarPagina($event)"
+    showFirstLastButtons
+    aria-label="Paginação de produtos"
+  ></mat-paginator>
+</section>

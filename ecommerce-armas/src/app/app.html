@@ -1,0 +1,86 @@
+<a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+<div class="admin-layout" [class.menu-open]="menuAberto()">
+  @if (menuAberto()) {
+    <button
+      class="menu-overlay"
+      type="button"
+      (click)="fecharMenu()"
+      aria-label="Fechar menu"
+    ></button>
+  }
+  <aside
+    class="sidebar"
+    id="menu-principal"
+    aria-label="Menu administrativo"
+    (keydown.escape)="fecharMenu()"
+  >
+    <a
+      class="brand"
+      routerLink="/produtos"
+      (click)="fecharMenu()"
+      aria-label="Arsenal Store — produtos"
+    >
+      <img src="arsenal-mark.svg" width="37" height="44" alt="" />
+      <span>Arsenal <strong>Store</strong></span>
+    </a>
+    <div class="sidebar-content">
+      <span class="nav-label">PRINCIPAL</span>
+      <nav aria-label="Navegação principal">
+        <a
+          routerLink="/produtos"
+          routerLinkActive="active-link"
+          ariaCurrentWhenActive="page"
+          (click)="fecharMenu()"
+        >
+          <mat-icon svgIcon="inventory_2"></mat-icon><span>Produtos</span
+          ><mat-icon class="nav-chevron" svgIcon="chevron_right"></mat-icon>
+        </a>
+        <a
+          routerLink="/clientes"
+          routerLinkActive="active-link"
+          ariaCurrentWhenActive="page"
+          (click)="fecharMenu()"
+        >
+          <mat-icon svgIcon="group"></mat-icon><span>Clientes</span
+          ><mat-icon class="nav-chevron" svgIcon="chevron_right"></mat-icon>
+        </a>
+      </nav>
+      <div class="sidebar-bottom">
+        <img class="watermark" src="arsenal-mark.svg" alt="" aria-hidden="true" />
+        <div class="store-signature">
+          <span class="signature-line"></span
+          ><span>ARSENAL STORE<small>Gestão da loja</small></span>
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="workspace">
+    <header class="topbar">
+      <div class="topbar-start">
+        <button
+          mat-icon-button
+          class="menu-toggle"
+          type="button"
+          (click)="menuAberto.set(!menuAberto())"
+          [attr.aria-expanded]="menuAberto()"
+          aria-controls="menu-principal"
+          [attr.aria-label]="menuAberto() ? 'Fechar menu' : 'Abrir menu'"
+        >
+          <mat-icon [svgIcon]="menuAberto() ? 'close' : 'menu'"></mat-icon>
+        </button>
+        <span class="area-label"
+          ><mat-icon svgIcon="admin_panel_settings"></mat-icon>Área administrativa</span
+        >
+      </div>
+      <div class="workspace-label">
+        <span class="workspace-logo"
+          ><img src="arsenal-mark.svg" width="21" height="25" alt="" /></span
+        ><span>Arsenal Store<small>Painel de gestão</small></span>
+      </div>
+    </header>
+    <main class="page-content" id="conteudo" tabindex="-1"><router-outlet /></main>
+    <footer class="workspace-footer">
+      <span>Arsenal Store</span><span>Produtos &amp; clientes</span>
+    </footer>
+  </div>
+</div>

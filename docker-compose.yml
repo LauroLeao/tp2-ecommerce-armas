@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: armas-postgres
+    environment:
+      POSTGRES_DB: armasdb
+      POSTGRES_USER: armas_user
+      POSTGRES_PASSWORD: "123456"
+    ports:
+      - "5433:5432"
+    volumes:
+      - armas_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U armas_user -d armasdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  armas_postgres_data:
