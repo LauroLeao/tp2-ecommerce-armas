@@ -60,13 +60,3 @@ npm test -- --watch=false
 ```
 
 Os testes do back-end usam um banco temporário em memória. O PostgreSQL não precisa estar iniciado para executá-los.
-
-## Preparação para entrega
-
-Execute na pasta raiz:
-
-```powershell
-.\preparar-entrega.ps1
-```
-
-O script cria `ecommerce-armas-entrega.zip` fora da pasta do projeto com o código-fonte do back e do front. As pastas geradas, como `node_modules`, `dist`, `target` e `.angular`, não são incluídas.
