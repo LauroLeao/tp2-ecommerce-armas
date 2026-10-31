@@ -25,3 +25,16 @@ html {
   );
   color-scheme: dark;
 }
+
+html[data-theme='claro'] {
+  @include mat.theme(
+    (
+      color: (
+        theme-type: light,
+        primary: mat.$red-palette,
+        tertiary: mat.$red-palette,
+      ),
+    )
+  );
+  color-scheme: light;
+}

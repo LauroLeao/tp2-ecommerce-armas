@@ -1,0 +1,146 @@
+<header class="page-heading">
+  <div>
+    <span class="eyebrow">VENDAS</span>
+    <h1>Pedidos de clientes</h1>
+    <p>Consulte o que cada cliente comprou e acompanhe o status do pedido.</p>
+  </div>
+  <button mat-flat-button class="primary-button" type="button" (click)="abrirNovo()">
+    <mat-icon svgIcon="add"></mat-icon>Registrar pedido
+  </button>
+</header>
+<p class="order-note">Registro administrativo: a loja pública ainda não possui carrinho nem pagamento. Somente pedidos confirmados representam compras concluídas.</p>
+@if (erro) { <p class="feedback error" role="alert">{{ erro }}</p> }
+@if (aviso) { <p class="feedback success" role="status">{{ aviso }}</p> }
+
+<div class="order-layout">
+  <section class="panel" aria-label="Pedidos cadastrados">
+    <div class="table-toolbar order-filters">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Buscar cliente</mat-label>
+        <input matInput [formControl]="buscaClienteFiltro" [matAutocomplete]="clientesFiltroAuto"
+          placeholder="Digite o nome" autocomplete="off" />
+        @if (clienteFiltro !== null) {
+          <button mat-icon-button matSuffix type="button" (click)="limparFiltroCliente()" aria-label="Limpar filtro de cliente">
+            <mat-icon svgIcon="close"></mat-icon>
+          </button>
+        }
+        <mat-autocomplete #clientesFiltroAuto="matAutocomplete" [displayWith]="exibirCliente" (optionSelected)="selecionarClienteFiltro($event.option.value)">
+          @for (cliente of sugestoesFiltro$ | async; track cliente.id) {
+            <mat-option [value]="cliente">{{ cliente.nome }} · {{ cliente.email }}</mat-option>
+          }
+        </mat-autocomplete>
+      </mat-form-field>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Status</mat-label>
+        <mat-select [value]="statusFiltro" (selectionChange)="filtrarStatus($event.value)">
+          <mat-option value="TODOS">Todos</mat-option>
+          <mat-option value="PENDENTE">Pendente</mat-option>
+          <mat-option value="CONFIRMADO">Confirmado</mat-option>
+          <mat-option value="CANCELADO">Cancelado</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <div class="table-scroll">
+      <table class="order-table">
+        <thead><tr><th>Pedido</th><th>Cliente</th><th>Data</th><th>Total</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          @for (pedido of pedidosVisiveis; track pedido.id) {
+            <tr [class.selected]="selecionado?.id === pedido.id">
+              <td>#{{ pedido.id }}</td>
+              <td>{{ pedido.clienteNome }}</td>
+              <td>{{ pedido.criadoEm | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td>{{ pedido.total | currency:'BRL' }}</td>
+              <td><span class="order-status" [class.confirmed]="pedido.status === 'CONFIRMADO'" [class.cancelled]="pedido.status === 'CANCELADO'">{{ pedido.status }}</span></td>
+              <td><button mat-stroked-button class="secondary-button" type="button" (click)="selecionado = pedido">Ver itens</button></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    @if (carregando) { <div class="empty-state">Carregando pedidos...</div> }
+    @else if (!pedidosVisiveis.length) { <div class="empty-state">Nenhum pedido encontrado para esse filtro.</div> }
+    <div class="table-footer">{{ pedidosVisiveis.length }} pedido(s) exibido(s)</div>
+  </section>
+
+  <aside class="panel order-detail">
+    <div class="panel-heading"><h2 class="section-title">Detalhes do pedido</h2></div>
+    @if (selecionado; as pedido) {
+      <div class="panel-body">
+        <strong>Pedido #{{ pedido.id }}</strong>
+        <p>Cliente: {{ pedido.clienteNome }}</p>
+        <p>Data: {{ pedido.criadoEm | date:'dd/MM/yyyy HH:mm' }}</p>
+        <p>Status: {{ pedido.status }}</p>
+        <h3>Produtos do pedido</h3>
+        @for (item of pedido.itens; track item.produtoId) {
+          <div class="detail-item">
+            <span>{{ item.quantidade }} × {{ item.nomeProduto }}<small>{{ item.precoUnitario | currency:'BRL' }} cada</small></span>
+            <strong>{{ item.subtotal | currency:'BRL' }}</strong>
+          </div>
+        }
+        <div class="detail-total"><span>Total</span><strong>{{ pedido.total | currency:'BRL' }}</strong></div>
+        @if (pedido.status === 'PENDENTE') {
+          <p class="form-hint">Confirme para descontar o estoque e concluir a compra.</p>
+          <div class="detail-actions">
+            <button mat-flat-button class="primary-button" type="button" (click)="alterarStatus('CONFIRMADO')" [disabled]="alterandoStatus">Confirmar pedido</button>
+            <button mat-stroked-button class="secondary-button" type="button" (click)="alterarStatus('CANCELADO')" [disabled]="alterandoStatus">Cancelar</button>
+          </div>
+        } @else if (pedido.status === 'CONFIRMADO') {
+          <button mat-stroked-button class="secondary-button" type="button" (click)="alterarStatus('CANCELADO')" [disabled]="alterandoStatus">Cancelar e devolver estoque</button>
+        }
+      </div>
+    } @else {
+      <div class="panel-body"><p>Selecione um pedido para ver os itens do cliente.</p></div>
+    }
+  </aside>
+</div>
+
+@if (novoAberto) {
+  <section class="panel new-order" id="novo-pedido" aria-label="Registrar pedido">
+    <div class="panel-heading"><div><span class="eyebrow">REGISTRO ADMINISTRATIVO</span><h2 class="section-title">Novo pedido</h2></div></div>
+    <div class="panel-body new-order-body">
+      <mat-form-field appearance="outline">
+        <mat-label>Cliente</mat-label>
+        <input matInput [formControl]="buscaClienteNovo" [matAutocomplete]="clientesNovoAuto"
+          placeholder="Digite pelo menos 2 letras" autocomplete="off" />
+        <mat-autocomplete #clientesNovoAuto="matAutocomplete" [displayWith]="exibirCliente" (optionSelected)="selecionarClienteNovo($event.option.value)">
+          @for (cliente of sugestoesNovo$ | async; track cliente.id) {
+            <mat-option [value]="cliente">{{ cliente.nome }} · {{ cliente.email }}</mat-option>
+          }
+        </mat-autocomplete>
+        <mat-hint>Selecione o cliente entre as sugestões.</mat-hint>
+      </mat-form-field>
+      <p class="form-hint">Não encontrou o cliente? <a routerLink="/clientes/new">Cadastre-o</a> antes de registrar o pedido.</p>
+      <div class="product-search">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Buscar produto</mat-label>
+          <input matInput [value]="buscaProduto" (input)="buscaProduto = $any($event.target).value" (keyup.enter)="buscarProdutos()" />
+        </mat-form-field>
+        <button mat-stroked-button type="button" class="secondary-button" (click)="buscarProdutos()">Buscar</button>
+      </div>
+      <div class="product-options">
+        @for (produto of produtosEncontrados; track produto.id) {
+          <div class="product-option">
+            <span>{{ produto.nome }} <small>{{ produto.preco | currency:'BRL' }} · {{ produto.estoque }} em estoque</small></span>
+            <button mat-stroked-button type="button" class="secondary-button" (click)="adicionarProduto(produto)" [disabled]="produto.estoque <= 0">Adicionar</button>
+          </div>
+        }
+        @if (carregandoProdutos) { <p>Carregando produtos...</p> }
+        @else if (!produtosEncontrados.length) { <p>Nenhum produto encontrado.</p> }
+      </div>
+      <h3>Itens selecionados</h3>
+      @for (item of itensNovos; track item.produto.id) {
+        <div class="selected-item">
+          <span>{{ item.produto.nome }}</span>
+          <label>Quantidade <input type="number" min="1" [max]="item.produto.estoque" [value]="item.quantidade" (change)="definirQuantidade(item, $event)" /></label>
+          <strong>{{ item.produto.preco * item.quantidade | currency:'BRL' }}</strong>
+          <button mat-stroked-button type="button" class="secondary-button" (click)="retirarProduto(item.produto.id!)">Remover</button>
+        </div>
+      }
+      <div class="detail-total"><span>Total estimado</span><strong>{{ totalNovo | currency:'BRL' }}</strong></div>
+      <div class="detail-actions">
+        <button mat-stroked-button class="secondary-button" type="button" (click)="novoAberto = false">Voltar</button>
+        <button mat-flat-button class="primary-button" type="button" (click)="salvarPedido()" [disabled]="salvando">{{ salvando ? 'Salvando…' : 'Registrar como pendente' }}</button>
+      </div>
+    </div>
+  </section>
+}

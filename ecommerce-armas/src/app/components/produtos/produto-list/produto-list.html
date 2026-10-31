@@ -119,6 +119,13 @@
             <span class="category-tag">{{ obj.categoriaNome }}</span>
           </td></ng-container
         >
+        <ng-container matColumnDef="marcaModelo"
+          ><th mat-header-cell *matHeaderCellDef>Marca / Modelo</th>
+          <td mat-cell *matCellDef="let obj">
+            <span>{{ obj.marcaNome || '—' }}</span>
+            @if (obj.modeloNome) { <span class="record-meta">{{ obj.modeloNome }}</span> }
+          </td></ng-container
+        >
         <ng-container matColumnDef="preco"
           ><th mat-header-cell *matHeaderCellDef>Preço</th>
           <td mat-cell *matCellDef="let obj">

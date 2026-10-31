@@ -2,9 +2,9 @@
   <div>
     <span class="eyebrow">Área administrativa</span>
     <h1>Gerenciamento de clientes</h1>
-    <p>Consulte e mantenha os dados dos clientes da loja.</p>
+    <p>Consulte os dados e acesse o histórico de pedidos de cada cliente.</p>
   </div>
-  <button mat-flat-button class="primary-button" routerLink="/clientes/new">
+  <button mat-stroked-button class="secondary-button" routerLink="/clientes/new">
     <mat-icon svgIcon="add"></mat-icon>Novo cliente
   </button>
 </div>
@@ -45,7 +45,13 @@
         <th mat-header-cell *matHeaderCellDef>Cliente</th>
         <td mat-cell *matCellDef="let cliente">
           <div class="record-cell">
-            <span class="person-avatar" aria-hidden="true">{{ iniciais(cliente.nome) }}</span>
+            <span class="person-avatar" aria-hidden="true">
+              @if (fotoUrl(cliente); as foto) {
+                <img [src]="foto" alt="" />
+              } @else {
+                {{ iniciais(cliente.nome) }}
+              }
+            </span>
             <span class="record-name">{{ cliente.nome }}</span>
           </div>
         </td>
@@ -72,6 +78,10 @@
         <th mat-header-cell *matHeaderCellDef>Ações</th>
         <td mat-cell *matCellDef="let cliente">
           <div class="row-actions">
+            <a mat-icon-button [routerLink]="['/pedidos']" [queryParams]="{ clienteId: cliente.id }"
+              [attr.aria-label]="'Ver pedidos de ' + cliente.nome" [title]="'Ver pedidos de ' + cliente.nome">
+              <mat-icon svgIcon="inventory"></mat-icon>
+            </a>
             <button
               mat-icon-button
               [routerLink]="['/clientes/edit', cliente.id]"

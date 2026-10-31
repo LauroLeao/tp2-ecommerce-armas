@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Cliente } from '../models/cliente.model';
+import { Cliente, ClienteRequest } from '../models/cliente.model';
 
 @Injectable({
   providedIn: 'root'
@@ -15,15 +15,23 @@ export class ClienteService {
     return this.http.get<Cliente[]>(this.apiUrl);
   }
 
+  sugerir(nome: string): Observable<Cliente[]> {
+    return this.http.get<Cliente[]>(`${this.apiUrl}/sugestoes`, { params: { nome } });
+  }
+
   buscarPorId(id: number): Observable<Cliente> {
     return this.http.get<Cliente>(`${this.apiUrl}/${id}`);
   }
 
-  cadastrar(cliente: Cliente): Observable<Cliente> {
+  obterUrlFoto(caminho?: string | null): string | null {
+    return caminho ? new URL(caminho, this.apiUrl).href : null;
+  }
+
+  cadastrar(cliente: ClienteRequest): Observable<Cliente> {
     return this.http.post<Cliente>(this.apiUrl, cliente);
   }
 
-  editar(id: number, cliente: Cliente): Observable<Cliente> {
+  editar(id: number, cliente: ClienteRequest): Observable<Cliente> {
     return this.http.put<Cliente>(`${this.apiUrl}/${id}`, cliente);
   }
 

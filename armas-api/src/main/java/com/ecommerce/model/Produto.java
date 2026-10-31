@@ -35,6 +35,16 @@ public class Produto extends PanacheEntityBase {
     @JoinColumn(name = "categoria_id", nullable = false)
     public Categoria categoria;
 
+    // Opcional na tabela para manter produtos criados antes do cadastro de modelos.
+    @ManyToOne
+    @JoinColumn(name = "modelo_id")
+    public Modelo modelo;
+
+    // Opcional para preservar produtos ja cadastrados antes desta relacao.
+    @ManyToOne
+    @JoinColumn(name = "fornecedor_id")
+    public Fornecedor fornecedor;
+
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "imagem_id", unique = true)
     public ProdutoImagem imagem;

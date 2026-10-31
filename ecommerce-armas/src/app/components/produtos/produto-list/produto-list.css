@@ -14,7 +14,7 @@
   padding: 22px;
   border: 1px solid var(--panel-border);
   border-radius: 8px;
-  background: linear-gradient(120deg, #1b1c1f, #141517);
+  background: var(--summary-gradient);
 }
 .summary-icon {
   display: grid;
@@ -23,19 +23,19 @@
   height: 46px;
   border-radius: 7px;
   flex-shrink: 0;
-  background: #421c2277;
-  color: #e74b56;
-  border: 1px solid #53252b;
+  background: var(--red-soft);
+  color: var(--red-text);
+  border: 1px solid var(--danger-border);
 }
 .summary-icon.green {
-  background: #22362777;
-  color: #83b77c;
-  border-color: #354839;
+  background: var(--success-bg);
+  color: var(--success-text);
+  border-color: var(--success-border);
 }
 .summary-icon.amber {
-  background: #46331b66;
-  color: #d6aa5e;
-  border-color: #534026;
+  background: var(--warning-bg);
+  color: var(--warning-text);
+  border-color: var(--warning-border);
 }
 .summary-icon mat-icon {
   width: 25px;
@@ -43,7 +43,7 @@
   font-size: 25px;
 }
 .summary-label {
-  color: #c0c1c8;
+  color: var(--text-secondary);
   font-size: 12px;
 }
 .summary-card strong {
@@ -54,14 +54,14 @@
   line-height: 1.1;
 }
 .summary-card small {
-  color: #81858f;
+  color: var(--text-quiet);
   font-size: 11px;
   line-height: 1.5;
 }
 .list-count {
-  color: #b1b3bc;
-  background: #26272b;
-  border: 1px solid #35363b;
+  color: var(--text-secondary);
+  background: var(--surface-chip);
+  border: 1px solid var(--panel-border);
   border-radius: 4px;
   padding: 5px 9px;
   font-size: 10px;
@@ -73,10 +73,10 @@
   place-items: center;
   width: 43px;
   height: 43px;
-  border: 1px solid #393a40;
+  border: 1px solid var(--panel-border);
   border-radius: 5px;
-  color: #82858f;
-  background: linear-gradient(135deg, #292b2f, #1c1d21);
+  color: var(--text-quiet);
+  background: var(--symbol-gradient);
 }
 .product-symbol mat-icon {
   font-size: 22px;
@@ -98,33 +98,33 @@
   text-overflow: ellipsis;
 }
 .product-code {
-  color: #81848e;
+  color: var(--text-quiet);
   font-size: 11px;
   font-variant-numeric: tabular-nums;
 }
 .category-tag {
-  background: #232428;
-  border: 1px solid #36373c;
+  background: var(--surface-chip);
+  border: 1px solid var(--panel-border);
   border-radius: 4px;
   padding: 4px 8px;
-  color: #bdbfc7;
+  color: var(--text-secondary);
   font-size: 10px;
   white-space: nowrap;
 }
 .price {
   white-space: nowrap;
-  color: #e4e4e8;
+  color: var(--text-main);
   font-variant-numeric: tabular-nums;
 }
 .units {
-  color: #757983;
+  color: var(--text-quiet);
   font-size: 10px;
 }
 .mat-column-nome {
   min-width: 185px;
 }
 .mat-column-acao {
-  text-align: right;
+  text-align: center;
   width: 104px;
 }
 .mat-column-estoque {

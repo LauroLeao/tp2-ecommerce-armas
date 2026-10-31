@@ -27,7 +27,7 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
   styleUrl: './produto-list.css',
 })
 export class ProdutoList implements OnInit, OnDestroy {
-  displayedColumns = ['codigo', 'nome', 'categoria', 'preco', 'estoque', 'status', 'acao'];
+  displayedColumns = ['codigo', 'nome', 'categoria', 'marcaModelo', 'preco', 'estoque', 'status', 'acao'];
   produtos: Produto[] = [];
   filtroNome = '';
   page = 0;

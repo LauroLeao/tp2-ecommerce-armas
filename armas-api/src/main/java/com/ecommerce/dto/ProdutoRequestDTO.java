@@ -24,6 +24,11 @@ public record ProdutoRequestDTO(
         @NotNull(message = "A categoria e obrigatoria")
         Long categoriaId,
 
+        @NotNull(message = "O modelo e obrigatorio")
+        Long modeloId,
+
+        Long fornecedorId,
+
         String imagemBase64,
 
         boolean removerImagem) {

@@ -1,0 +1,40 @@
+<div class="login-layout">
+  <section class="login-intro" aria-label="Boas-vindas">
+    <img src="arsenal-mark.svg" width="66" height="78" alt="" />
+    <span class="eyebrow">ARSENAL STORE</span>
+    <h1>Bem-vindo à<br /><strong>Arsenal Store</strong></h1>
+    <p>Acesse sua conta para acompanhar seus pedidos ou administrar a loja.</p>
+    <div class="login-watermark" aria-hidden="true"><img src="arsenal-mark.svg" alt="" /></div>
+  </section>
+  <section class="panel login-panel" aria-labelledby="login-titulo">
+    <div class="login-panel-content">
+      <span class="eyebrow">ACESSO À CONTA</span>
+      <h2 id="login-titulo">Entrar</h2>
+      <p>Informe seu e-mail e senha.</p>
+      @if (erro) { <div class="feedback error" role="alert">{{ erro }}</div> }
+      <form [formGroup]="form" (ngSubmit)="entrar()">
+        <mat-form-field appearance="outline">
+          <mat-label>E-mail</mat-label>
+          <input matInput type="email" formControlName="email" autocomplete="username" />
+          @if (form.controls.email.hasError('required')) { <mat-error>Informe seu e-mail.</mat-error> }
+          @else if (form.controls.email.hasError('email')) { <mat-error>Informe um e-mail válido.</mat-error> }
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Senha</mat-label>
+          <input matInput [type]="mostrarSenha ? 'text' : 'password'" formControlName="senha" autocomplete="current-password" />
+          <button mat-icon-button matSuffix type="button" (click)="mostrarSenha = !mostrarSenha"
+            [attr.aria-label]="mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'">
+            <mat-icon [svgIcon]="mostrarSenha ? 'visibility_off' : 'visibility'"></mat-icon>
+          </button>
+          @if (form.controls.senha.hasError('required')) { <mat-error>Informe sua senha.</mat-error> }
+        </mat-form-field>
+        <button mat-flat-button class="primary-button login-submit" type="submit" [disabled]="carregando">
+          {{ carregando ? 'Entrando...' : 'Entrar' }}
+        </button>
+      </form>
+      <div class="login-divider"><span>ou</span></div>
+      <a mat-stroked-button class="secondary-button login-register" routerLink="/cadastro">Criar conta de cliente</a>
+      <p class="login-hint">O acesso administrativo é configurado pelo responsável do sistema.</p>
+    </div>
+  </section>
+</div>

@@ -16,4 +16,12 @@ export class CategoriaService {
   cadastrar(nome: string): Observable<Categoria> {
     return this.http.post<Categoria>(this.apiUrl, { nome });
   }
+
+  editar(id: number, nome: string): Observable<Categoria> {
+    return this.http.put<Categoria>(`${this.apiUrl}/${id}`, { nome });
+  }
+
+  excluir(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
 }

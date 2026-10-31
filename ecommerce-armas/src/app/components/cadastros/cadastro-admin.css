@@ -1,0 +1,28 @@
+:host { display: block; }
+.catalog-layout { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 20px; align-items: start; }
+.catalog-list { min-width: 0; }
+.catalog-count { color: var(--text-muted); font-size: 12px; }
+.catalog-table { width: 100%; min-width: 570px; border-collapse: collapse; font-size: 12px; }
+.catalog-table th { padding: 17px 16px; text-align: left; background: var(--surface-table); color: var(--text-secondary); font-size: 11px; font-weight: 500; }
+.catalog-table td { padding: 14px 16px; color: var(--text-secondary); border-top: 1px solid var(--panel-border); }
+.catalog-table th:last-child, .catalog-table td:last-child { text-align: center; }
+.catalog-table tr:hover, .catalog-table tr.selected { background: var(--surface-hover); }
+.catalog-table td.name { color: var(--text-main); font-weight: 500; }
+.catalog-table td.muted { color: var(--text-muted); }
+.contact small { display: block; margin-top: 5px; color: var(--text-muted); }
+.catalog-editor { position: sticky; top: 20px; }
+.catalog-editor .panel-heading { padding-bottom: 19px; }
+.catalog-editor .section-title { margin-top: 8px; }
+.catalog-editor .panel-body { display: grid; gap: 12px; }
+.catalog-editor mat-form-field { width: 100%; }
+.form-hint { color: var(--text-muted); font-size: 12px; margin: -5px 0 6px; }
+.form-hint a { color: var(--red-text); }
+.editor-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 9px; margin-top: 8px; }
+.feedback.success { color: var(--success-text); background: var(--success-bg); border: 1px solid var(--success-border); }
+.models-panel { margin-top: 20px; }
+.models-layout { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 20px; align-items: start; }
+.model-editor { display: grid; gap: 10px; }
+.model-editor h3 { margin: 0; font-size: 16px; }
+.model-editor mat-form-field { width: 100%; }
+@media (max-width: 1150px) { .catalog-layout, .models-layout { grid-template-columns: minmax(0, 1fr); } .catalog-editor { position: static; } }
+@media (max-width: 600px) { .catalog-editor .panel-body { padding: 18px; } .editor-actions button { flex: 1 1 auto; } }

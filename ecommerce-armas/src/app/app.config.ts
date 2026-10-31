@@ -5,7 +5,7 @@ import { MatPaginatorIntl } from '@angular/material/paginator';
 import { PaginadorPortugues } from './paginador-portugues';
 import { provideRouter } from '@angular/router';
 import { provideClientHydration } from '@angular/platform-browser';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 
 import { routes } from './app.routes';
 
@@ -18,6 +18,8 @@ export const appConfig: ApplicationConfig = {
     { provide: MatPaginatorIntl, useClass: PaginadorPortugues },
     provideRouter(routes),
     provideClientHydration(),
-    provideHttpClient(),
+    provideHttpClient(withInterceptors([(request, next) =>
+      next(request.url.startsWith('http://localhost:8080/') ? request.clone({ withCredentials: true }) : request)
+    ])),
   ],
 };

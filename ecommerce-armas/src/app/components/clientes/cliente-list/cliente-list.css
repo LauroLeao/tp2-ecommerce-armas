@@ -19,14 +19,14 @@
   font-size: 0.8rem;
 }
 .client-contact {
-  color: #c4c5ca;
+  color: var(--text-secondary);
   font-size: 0.84rem;
 }
 .client-address {
   display: block;
   min-width: 130px;
   max-width: 260px;
-  color: #c4c5ca;
+  color: var(--text-secondary);
   font-size: 0.84rem;
   padding: 12px 0;
 }
@@ -37,7 +37,8 @@
   min-width: 210px;
 }
 .mat-column-acao {
-  width: 110px;
+  width: 140px;
+  text-align: center;
 }
 .table-footer {
   color: var(--text-muted);
@@ -51,4 +52,10 @@
   .client-count {
     font-size: 0.76rem;
   }
+}
+:host .person-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }

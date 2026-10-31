@@ -1,15 +1,15 @@
 <nav class="breadcrumb" aria-label="Caminho da página">
-  <a routerLink="/clientes">Clientes</a>
+  <a [routerLink]="modoPublico ? '/login' : modoPerfil ? '/painel' : '/clientes'">{{ modoPublico ? 'Entrar' : modoPerfil ? 'Painel' : 'Clientes' }}</a>
   <mat-icon svgIcon="chevron_right"></mat-icon>
-  <span>{{ editando ? 'Editar cliente' : 'Cadastro' }}</span>
+  <span>{{ modoPublico ? 'Criar conta' : modoPerfil ? 'Meu perfil' : editando ? 'Editar cliente' : 'Cadastro' }}</span>
 </nav>
 
 <div class="page-heading">
   <div>
-    <h1>{{ editando ? 'Editar cliente' : 'Cadastro de cliente' }}</h1>
+    <h1>{{ modoPublico ? 'Criar conta' : modoPerfil ? 'Meu perfil' : editando ? 'Editar cliente' : 'Cadastro de cliente' }}</h1>
     <p>
       {{
-        editando
+        modoPublico ? 'Preencha seus dados para criar seu acesso à loja.' : modoPerfil ? 'Atualize seus dados pessoais e seu endereço.' : editando
           ? 'Atualize as informações do cliente.'
           : 'Preencha os dados para cadastrar um novo cliente na loja.'
       }}
@@ -34,11 +34,12 @@
               placeholder="Digite o nome completo"
               autocomplete="name"
             />
-            @if (formGroup.get('nome')?.hasError('required')) {
+            @if (formGroup.get('nome')?.hasError('required') || formGroup.get('nome')?.hasError('pattern')) {
               <mat-error>Informe o nome do cliente.</mat-error>
+            } @else if (formGroup.get('nome')?.hasError('api')) {
+              <mat-error>{{ formGroup.get('nome')?.getError('api') }}</mat-error>
             }
           </mat-form-field>
-
           <mat-form-field appearance="outline">
             <mat-label>E-mail</mat-label>
             <input
@@ -47,11 +48,35 @@
               formControlName="email"
               placeholder="exemplo@email.com"
               autocomplete="email"
+              maxlength="160"
             />
             @if (formGroup.get('email')?.hasError('required')) {
               <mat-error>Informe o e-mail.</mat-error>
             } @else if (formGroup.get('email')?.hasError('email')) {
               <mat-error>Informe um e-mail válido.</mat-error>
+            } @else if (formGroup.get('email')?.hasError('api')) {
+              <mat-error>{{ formGroup.get('email')?.getError('api') }}</mat-error>
+            }
+            @if (modoPerfil) { <mat-hint>O administrador pode alterar o e-mail de acesso.</mat-hint> }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>CPF</mat-label>
+            <input
+              matInput
+              formControlName="cpf"
+              placeholder="Somente 11 números"
+              inputmode="numeric"
+              autocomplete="off"
+              maxlength="14"
+              (input)="somenteDigitos('cpf', 11)"
+            />
+            @if (formGroup.get('cpf')?.hasError('required')) {
+              <mat-error>Informe o CPF.</mat-error>
+            } @else if (formGroup.get('cpf')?.hasError('cpf')) {
+              <mat-error>Informe um CPF válido com 11 números.</mat-error>
+            } @else if (formGroup.get('cpf')?.hasError('api')) {
+              <mat-error>{{ formGroup.get('cpf')?.getError('api') }}</mat-error>
             }
           </mat-form-field>
 
@@ -61,28 +86,185 @@
               matInput
               type="tel"
               formControlName="telefone"
-              placeholder="(00) 00000-0000"
+              placeholder="11999999999"
               autocomplete="tel"
+              inputmode="numeric"
+              maxlength="15"
+              (input)="somenteDigitos('telefone', 11)"
             />
             @if (formGroup.get('telefone')?.hasError('required')) {
               <mat-error>Informe o telefone.</mat-error>
-            }
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="field-wide">
-            <mat-label>Endereço</mat-label>
-            <textarea
-              matInput
-              formControlName="endereco"
-              placeholder="Rua, número, bairro e cidade"
-              autocomplete="street-address"
-              rows="3"
-            ></textarea>
-            @if (formGroup.get('endereco')?.hasError('required')) {
-              <mat-error>Informe o endereço.</mat-error>
+            } @else if (formGroup.get('telefone')?.hasError('pattern')) {
+              <mat-error>Informe 10 ou 11 números, com DDD.</mat-error>
+            } @else if (formGroup.get('telefone')?.hasError('api')) {
+              <mat-error>{{ formGroup.get('telefone')?.getError('api') }}</mat-error>
             }
           </mat-form-field>
         </div>
+        @if (modoPublico) {
+          <div class="account-fields">
+            <h3><mat-icon svgIcon="admin_panel_settings"></mat-icon> Acesso à conta</h3>
+            <p>Crie uma senha para consultar seu perfil e seus pedidos.</p>
+            <div class="form-grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Senha</mat-label>
+                <input matInput type="password" formControlName="senha" autocomplete="new-password" />
+                @if (formGroup.get('senha')?.hasError('required')) { <mat-error>Informe uma senha.</mat-error> }
+                @else if (formGroup.get('senha')?.hasError('minlength')) { <mat-error>Use pelo menos 8 caracteres.</mat-error> }
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Confirmar senha</mat-label>
+                <input matInput type="password" formControlName="confirmarSenha" autocomplete="new-password" />
+                @if (formGroup.get('confirmarSenha')?.hasError('required')) { <mat-error>Confirme a senha.</mat-error> }
+                @else if (formGroup.get('confirmarSenha')?.hasError('diferente')) { <mat-error>As senhas não conferem.</mat-error> }
+              </mat-form-field>
+            </div>
+          </div>
+        }
+
+        <section class="client-photo-section" aria-label="Foto do cliente">
+          <div>
+            <h2 class="section-title"><mat-icon svgIcon="person_outline"></mat-icon>Foto do cliente</h2>
+            <p class="section-description">Opcional. Escolha uma foto JPG ou PNG de até 5 MB.</p>
+          </div>
+          <input #arquivoFoto type="file" accept="image/jpeg,image/png" hidden (change)="selecionarFoto($event)" />
+          <div class="photo-upload">
+            <span class="person-avatar photo-thumbnail" aria-hidden="true">
+              @if (fotoPreview()) {
+                <img [src]="fotoPreview()" alt="" />
+              } @else if (formGroup.get('nome')?.value?.trim()) {
+                {{ iniciais }}
+              } @else {
+                <mat-icon svgIcon="person_outline"></mat-icon>
+              }
+            </span>
+            <div class="photo-details">
+              <strong>{{ nomeFoto() }}</strong>
+              <div class="photo-actions">
+                <button mat-stroked-button type="button" (click)="arquivoFoto.click()" [disabled]="salvando || excluindo || carregandoFoto()">
+                  <mat-icon svgIcon="add"></mat-icon>{{ fotoPreview() ? 'Trocar foto' : 'Selecionar foto' }}
+                </button>
+                @if (fotoPreview()) {
+                  <button mat-button type="button" class="danger-button" (click)="retirarFoto()" [disabled]="salvando || excluindo || carregandoFoto()">
+                    <mat-icon svgIcon="delete_outline"></mat-icon>Remover foto
+                  </button>
+                }
+              </div>
+              <small aria-live="polite">{{ carregandoFoto() ? 'Preparando foto...' : 'A foto será salva junto com o cadastro.' }}</small>
+            </div>
+          </div>
+          @if (erroFoto()) {
+            <p class="feedback error" role="alert">{{ erroFoto() }}</p>
+          }
+        </section>
+
+        <div class="address-heading">
+          <h2 class="section-title"><mat-icon svgIcon="location_on"></mat-icon>Endereço</h2>
+          <p class="section-description">Se souber o CEP, consulte para preencher o endereço. Caso contrário, informe os dados e busque estado e município abaixo.</p>
+        </div>
+        @if (enderecoAntigo) {
+          <p class="legacy-address">Endereço anterior: {{ enderecoAntigo }}. Complete o endereço abaixo para atualizar este cadastro.</p>
+        }
+        <div class="form-grid">
+          <div class="cep-row field-wide">
+            <mat-form-field appearance="outline">
+              <mat-label>CEP (opcional)</mat-label>
+              <input
+                matInput
+                formControlName="cep"
+                placeholder="00000000"
+                inputmode="numeric"
+                autocomplete="postal-code"
+                maxlength="9"
+                (input)="somenteDigitos('cep', 8)"
+              />
+              @if (formGroup.get('cep')?.hasError('pattern')) {
+                <mat-error>O CEP deve ter 8 números.</mat-error>
+              } @else if (formGroup.get('cep')?.hasError('api')) {
+                <mat-error>{{ formGroup.get('cep')?.getError('api') }}</mat-error>
+              }
+              <mat-hint>Preencha apenas se souber. A consulta é opcional.</mat-hint>
+            </mat-form-field>
+            <button mat-stroked-button type="button" class="secondary-button" (click)="consultarCep()" [disabled]="consultandoCep || salvando || excluindo">
+              {{ consultandoCep ? 'Consultando...' : 'Consultar CEP' }}
+            </button>
+          </div>
+
+          @if (erroCep) {
+            <div class="feedback error field-wide" role="alert">{{ erroCep }}</div>
+          }
+
+          <mat-form-field appearance="outline" class="field-wide">
+            <mat-label>Rua / logradouro</mat-label>
+            <input matInput formControlName="logradouro" autocomplete="address-line1" />
+            @if (formGroup.get('logradouro')?.hasError('required') || formGroup.get('logradouro')?.hasError('pattern')) {
+              <mat-error>Informe a rua ou logradouro.</mat-error>
+            } @else if (formGroup.get('logradouro')?.hasError('api')) {
+              <mat-error>{{ formGroup.get('logradouro')?.getError('api') }}</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Número</mat-label>
+            <input matInput formControlName="numero" autocomplete="address-line2" maxlength="20" />
+            @if (formGroup.get('numero')?.hasError('required') || formGroup.get('numero')?.hasError('pattern')) {
+              <mat-error>Informe o número (ou S/N).</mat-error>
+            } @else if (formGroup.get('numero')?.hasError('api')) {
+              <mat-error>{{ formGroup.get('numero')?.getError('api') }}</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Complemento (opcional)</mat-label>
+            <input matInput formControlName="complemento" maxlength="120" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Bairro</mat-label>
+            <input matInput formControlName="bairro" maxlength="100" />
+            @if (formGroup.get('bairro')?.hasError('required') || formGroup.get('bairro')?.hasError('pattern')) {
+              <mat-error>Informe o bairro.</mat-error>
+            } @else if (formGroup.get('bairro')?.hasError('api')) {
+              <mat-error>{{ formGroup.get('bairro')?.getError('api') }}</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Estado / UF</mat-label>
+            <input matInput [formControl]="estadoBusca" [matAutocomplete]="estadosAuto"
+              placeholder="Digite o estado ou a UF" autocomplete="off" />
+            <mat-autocomplete #estadosAuto="matAutocomplete" [displayWith]="exibirEstado"
+              (optionSelected)="selecionarEstado($event.option.value)">
+              @for (estado of estadosFiltrados; track estado.id) {
+                <mat-option [value]="estado">{{ estado.nome }} ({{ estado.sigla }})</mat-option>
+              }
+            </mat-autocomplete>
+            @if (estadoBusca.hasError('selecao')) {
+              <mat-error>Selecione um estado da lista.</mat-error>
+            }
+            <mat-hint>{{ carregandoEstados ? 'Carregando estados...' : 'Digite e selecione um estado.' }}</mat-hint>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Município</mat-label>
+            <input matInput [formControl]="municipioBusca" [matAutocomplete]="municipiosAuto"
+              placeholder="Digite pelo menos 2 letras" autocomplete="off" />
+            <mat-autocomplete #municipiosAuto="matAutocomplete" [displayWith]="exibirMunicipio"
+              (optionSelected)="selecionarMunicipio($event.option.value)">
+              @for (municipio of municipiosFiltrados; track municipio.id) {
+                <mat-option [value]="municipio">{{ municipio.nome }}</mat-option>
+              }
+            </mat-autocomplete>
+            @if (municipioBusca.hasError('selecao')) {
+              <mat-error>Selecione um município da lista.</mat-error>
+            }
+            <mat-hint>{{ carregandoMunicipios ? 'Carregando municípios...' : 'Primeiro escolha o estado; depois busque o município.' }}</mat-hint>
+          </mat-form-field>
+        </div>
+
+        @if (erroLocalidades) {
+          <div class="feedback error" role="alert">{{ erroLocalidades }}</div>
+        }
 
         @if (erro) {
           <div class="feedback error" role="alert">
@@ -91,7 +273,7 @@
         }
 
         <div class="form-actions">
-          @if (editando) {
+          @if (editando && !modoPerfil) {
             <button
               mat-stroked-button
               type="button"
@@ -107,7 +289,7 @@
             mat-stroked-button
             type="button"
             class="secondary-button"
-            routerLink="/clientes"
+            [routerLink]="modoPublico ? '/login' : modoPerfil ? '/painel' : '/clientes'"
             [disabled]="salvando || excluindo"
           >
             <mat-icon svgIcon="close"></mat-icon>Cancelar
@@ -116,10 +298,10 @@
             mat-flat-button
             type="submit"
             class="primary-button"
-            [disabled]="formGroup.invalid || salvando || excluindo"
+            [disabled]="formGroup.invalid || estadoBusca.invalid || municipioBusca.invalid || salvando || excluindo || carregandoFoto()"
           >
             <mat-icon svgIcon="save"></mat-icon
-            >{{ salvando ? 'Salvando...' : editando ? 'Salvar alterações' : 'Cadastrar cliente' }}
+            >{{ salvando ? 'Salvando...' : modoPublico ? 'Criar minha conta' : editando ? 'Salvar alterações' : 'Cadastrar cliente' }}
           </button>
         </div>
       </div>
@@ -130,7 +312,9 @@
       <div class="panel-body">
         <div class="preview-identity">
           <span class="person-avatar preview-avatar" aria-hidden="true">
-            @if (formGroup.get('nome')?.value?.trim()) {
+            @if (fotoPreview()) {
+              <img [src]="fotoPreview()" alt="" />
+            } @else if (formGroup.get('nome')?.value?.trim()) {
               {{ iniciais }}
             } @else {
               <mat-icon svgIcon="person_outline"></mat-icon>
@@ -151,8 +335,12 @@
             <dd>{{ formGroup.get('telefone')?.value || 'Não informado' }}</dd>
           </div>
           <div>
+            <dt><mat-icon svgIcon="person_outline"></mat-icon>CPF</dt>
+            <dd>{{ formGroup.get('cpf')?.value || 'Não informado' }}</dd>
+          </div>
+          <div>
             <dt><mat-icon svgIcon="location_on"></mat-icon>Endereço</dt>
-            <dd>{{ formGroup.get('endereco')?.value || 'Não informado' }}</dd>
+            <dd>{{ enderecoResumo }}</dd>
           </div>
         </dl>
         <p class="preview-note">

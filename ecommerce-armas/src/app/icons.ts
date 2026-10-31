@@ -1,5 +1,15 @@
 export const ARSENAL_ICONS = `<svg xmlns="http://www.w3.org/2000/svg">
   <defs>
+    <svg id="dashboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    <svg id="logout" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5"/><path d="m14 7 5 5-5 5M19 12H9"/></svg>
+    <svg id="visibility" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+    <svg id="visibility_off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3 21 21M10.6 6.1A12 12 0 0 1 12 6c6.5 0 10 6 10 6a16 16 0 0 1-3.1 3.6M6.2 7.4C3.5 9.1 2 12 2 12s3.5 6 10 6c1.3 0 2.5-.2 3.5-.6"/></svg>
+    <svg id="light_mode" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"/>
+    </svg>
+    <svg id="dark_mode" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20.5 15.7A9 9 0 0 1 8.3 3.5 9 9 0 1 0 20.5 15.7z"/>
+    </svg>
     <svg id="inventory_2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
       <path d="M3 7.5 12 3l9 4.5v10L12 22l-9-4.5zM3 7.5l9 4.5 9-4.5M12 12v10M7.5 5.25l9 4.5v4"/>
     </svg>
@@ -91,6 +101,15 @@ export const ARSENAL_ICONS = `<svg xmlns="http://www.w3.org/2000/svg">
     <svg id="location_on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
       <path d="M19 9c0 5-7 12-7 12S5 14 5 9a7 7 0 0 1 14 0z"/>
       <circle cx="12" cy="9" r="2.5"/>
+    </svg>
+    <svg id="sell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 12V4h8l10 10-7 7z"/><circle cx="7.5" cy="8" r="1"/>
+    </svg>
+    <svg id="category" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+    </svg>
+    <svg id="local_shipping" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2 6h12v11H2zM14 10h4l4 4v3h-8z"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/>
     </svg>
   </defs>
 </svg>`;

@@ -10,11 +10,13 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 
 @QuarkusTest
+@io.quarkus.test.security.TestSecurity(user = "admin@teste.local", roles = "ADMIN")
 class ProdutoResourceTest {
 
     @Test
     void deveExecutarCrudCompleto() {
         Long categoriaId = criarCategoria("Categoria CRUD");
+        long[] vinculos = criarVinculos("CRUD");
         Long id = given()
                 .contentType(ContentType.JSON)
                 .body("""
@@ -23,9 +25,11 @@ class ProdutoResourceTest {
                           "descricao": "Criado pelo teste automatizado",
                           "preco": 1500.0,
                           "estoque": 4,
-                          "categoriaId": %d
+                          "categoriaId": %d,
+                          "modeloId": %d,
+                          "fornecedorId": %d
                         }
-                        """.formatted(categoriaId))
+                        """.formatted(categoriaId, vinculos[0], vinculos[1]))
                 .when().post("/produtos")
                 .then()
                 .statusCode(201)
@@ -47,9 +51,11 @@ class ProdutoResourceTest {
                           "descricao": "Atualizado pelo teste automatizado",
                           "preco": 1750.0,
                           "estoque": 6,
-                          "categoriaId": %d
+                          "categoriaId": %d,
+                          "modeloId": %d,
+                          "fornecedorId": %d
                         }
-                        """.formatted(categoriaId))
+                        """.formatted(categoriaId, vinculos[0], vinculos[1]))
                 .when().put("/produtos/{id}", id)
                 .then()
                 .statusCode(200)
@@ -82,13 +88,15 @@ class ProdutoResourceTest {
     @Test
     void deveFiltrarPorNomeNoBancoEPaginar() {
         Long categoriaId = criarCategoria("Categoria Paginacao");
+        long[] vinculos = criarVinculos("Paginacao");
         long[] ids = new long[5];
         for (int i = 0; i < ids.length; i++) {
             ids[i] = given()
                     .contentType(ContentType.JSON)
                     .body("""
-                            {"nome":"Busca paginada %d", "preco":100, "estoque":1, "categoriaId":%d}
-                            """.formatted(i, categoriaId))
+                            {"nome":"Busca paginada %d", "preco":100, "estoque":1, "categoriaId":%d,
+                             "modeloId":%d, "fornecedorId":%d}
+                            """.formatted(i, categoriaId, vinculos[0], vinculos[1]))
                     .when().post("/produtos")
                     .then().statusCode(201)
                     .extract().jsonPath().getLong("id");
@@ -123,5 +131,19 @@ class ProdutoResourceTest {
                 .when().post("/categorias")
                 .then().statusCode(201)
                 .extract().jsonPath().getLong("id");
+    }
+
+    private long[] criarVinculos(String sufixo) {
+        long marcaId = given().contentType(ContentType.JSON)
+                .body("{\"nome\":\"Marca " + sufixo + "\"}")
+                .when().post("/marcas").then().statusCode(201).extract().jsonPath().getLong("id");
+        long modeloId = given().contentType(ContentType.JSON)
+                .body("{\"nome\":\"Modelo " + sufixo + "\",\"marcaId\":" + marcaId + "}")
+                .when().post("/modelos").then().statusCode(201).extract().jsonPath().getLong("id");
+        long fornecedorId = given().contentType(ContentType.JSON)
+                .body("{\"nome\":\"Fornecedor " + sufixo + "\",\"email\":\"" + sufixo.toLowerCase()
+                        + "@teste.com\",\"telefone\":\"11999999999\",\"marcaId\":" + marcaId + "}")
+                .when().post("/fornecedores").then().statusCode(201).extract().jsonPath().getLong("id");
+        return new long[] { modeloId, fornecedorId };
     }
 }

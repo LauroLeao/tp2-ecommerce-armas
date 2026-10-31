@@ -1,0 +1,23 @@
+.dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(195px, 1fr)); gap: 17px; margin-bottom: 24px; }
+.dashboard-card { display: flex; flex-direction: column; gap: 10px; padding: 23px; color: var(--text-main); text-decoration: none; background: var(--panel-gradient); transition: transform .16s, border-color .16s; }
+a.dashboard-card:hover { transform: translateY(-2px); border-color: var(--red-dark); }
+.dashboard-card span { color: var(--text-muted); }
+.dashboard-card strong { font-size: 34px; line-height: 1; }
+.dashboard-card small { color: var(--red-text); }
+.dashboard-section { overflow: hidden; }
+.dashboard-links { display: flex; flex-wrap: wrap; gap: 12px; padding: 23px; }
+.customer-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(245px, 330px); gap: 22px; }
+.dashboard-orders { padding: 0 20px; }
+.dashboard-order { display: grid; grid-template-columns: minmax(150px, 1fr) auto auto; align-items: center; gap: 16px; padding: 18px 0; border-bottom: 1px solid var(--panel-border); }
+.dashboard-order:last-child { border-bottom: 0; }
+.dashboard-order small { display: block; color: var(--text-muted); margin-top: 5px; }
+.dashboard-order details { grid-column: 1 / -1; color: var(--text-secondary); }
+.dashboard-order summary { cursor: pointer; color: var(--red-text); }
+.dashboard-order ul { margin: 10px 0 0; padding-left: 20px; }
+.dashboard-empty, .panel-loading { padding: 24px; color: var(--text-muted); }
+.profile-summary { padding: 24px; display: flex; flex-direction: column; gap: 10px; align-items: flex-start; overflow-wrap: anywhere; }
+.profile-summary > span, .profile-summary p { color: var(--text-muted); }
+.profile-photo { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 1px solid var(--panel-border); }
+.profile-placeholder { display: grid; place-items: center; background: var(--avatar-bg); color: var(--avatar-text); }
+@media (max-width: 900px) { .customer-grid { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .dashboard-order { grid-template-columns: 1fr auto; } .dashboard-order > strong { grid-column: 1 / -1; } }

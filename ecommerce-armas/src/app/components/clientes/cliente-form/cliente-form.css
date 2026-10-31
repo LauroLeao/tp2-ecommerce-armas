@@ -1,6 +1,10 @@
 :host {
   display: block;
 }
+.account-fields { padding: 24px 0 0; margin-top: 23px; border-top: 1px solid var(--panel-border); }
+.account-fields h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 6px; font-size: 16px; }
+.account-fields h3 mat-icon { color: var(--red-text); }
+.account-fields p { color: var(--text-muted); margin: 0 0 18px; }
 .panel-heading {
   flex-direction: column;
   align-items: flex-start;
@@ -25,6 +29,71 @@
   margin: 9px 0 0;
   color: var(--text-muted);
   font-size: 0.85rem;
+}
+.client-photo-section {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--panel-border);
+}
+.photo-upload {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: 18px;
+}
+.person-avatar.photo-thumbnail {
+  width: 72px;
+  height: 72px;
+  font-size: 1.4rem;
+}
+.photo-thumbnail img, .preview-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+.photo-details {
+  display: grid;
+  gap: 9px;
+  min-width: 0;
+}
+.photo-details strong {
+  overflow-wrap: anywhere;
+  font-size: 0.85rem;
+}
+.photo-details small {
+  color: var(--text-muted);
+  font-size: 0.76rem;
+}
+.photo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.address-heading {
+  margin: 28px 0 18px;
+  padding-top: 24px;
+  border-top: 1px solid var(--panel-border);
+}
+.cep-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.cep-row mat-form-field {
+  flex: 1;
+}
+.cep-row button {
+  min-height: 56px;
+  white-space: nowrap;
+}
+.legacy-address {
+  padding: 12px 14px;
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
 }
 .client-preview {
   align-self: start;
@@ -103,6 +172,16 @@ textarea {
   resize: vertical;
 }
 @media (max-width: 600px) {
+  .photo-upload {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .cep-row {
+    flex-direction: column;
+  }
+  .cep-row button {
+    width: 100%;
+  }
   .form-actions button {
     width: 100%;
   }

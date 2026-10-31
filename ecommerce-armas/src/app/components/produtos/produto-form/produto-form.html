@@ -51,39 +51,48 @@
             <mat-error>Selecione uma categoria.</mat-error>
           </mat-form-field>
 
-          <div class="field-wide category-area">
-            <details class="category-details">
-              <summary>
-                <mat-icon aria-hidden="true" svgIcon="add_circle_outline"></mat-icon> Cadastrar uma
-                categoria
-              </summary>
-              <div class="new-category">
-                <mat-form-field appearance="outline" subscriptSizing="dynamic">
-                  <mat-label>Nome da categoria</mat-label>
-                  <input
-                    matInput
-                    #novaCategoria
-                    maxlength="80"
-                    placeholder="Ex.: Acessórios"
-                    (keydown.enter)="$event.preventDefault(); adicionarCategoria(novaCategoria)"
-                  />
-                </mat-form-field>
-                <button
-                  type="button"
-                  mat-stroked-button
-                  class="secondary-button"
-                  [disabled]="cadastrandoCategoria || ocupado"
-                  (click)="adicionarCategoria(novaCategoria)"
-                >
-                  <mat-icon svgIcon="add"></mat-icon
-                  >{{ cadastrandoCategoria ? 'Cadastrando…' : 'Adicionar' }}
-                </button>
-              </div>
-            </details>
-            @if (erroCategoria) {
-              <p class="feedback error category-feedback" role="alert">{{ erroCategoria }}</p>
-            }
-          </div>
+          <p class="field-wide relation-help">Não encontrou a categoria? <a routerLink="/categorias">Gerencie as categorias do catálogo</a>.</p>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Marca</mat-label>
+            <mat-select formControlName="marcaId" required>
+              @for (marca of marcas; track marca.id) {
+                <mat-option [value]="marca.id">{{ marca.nome }}</mat-option>
+              }
+            </mat-select>
+            <mat-error>Selecione uma marca.</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Modelo</mat-label>
+            <mat-select formControlName="modeloId" [disabled]="!formGroup.get('marcaId')?.value || carregandoVinculos" required>
+              @for (modelo of modelos; track modelo.id) {
+                <mat-option [value]="modelo.id">{{ modelo.nome }}</mat-option>
+              }
+            </mat-select>
+            <mat-hint>Modelos da marca selecionada</mat-hint>
+            <mat-error>Selecione um modelo.</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="field-wide">
+            <mat-label>Fornecedor</mat-label>
+            <mat-select formControlName="fornecedorId" [disabled]="!formGroup.get('marcaId')?.value || carregandoVinculos">
+              <mat-option [value]="null">Não informado</mat-option>
+              @for (fornecedor of fornecedores; track fornecedor.id) {
+                <mat-option [value]="fornecedor.id">{{ fornecedor.nome }}</mat-option>
+              }
+            </mat-select>
+            <mat-hint>Opcional. Fornecedores da marca selecionada.</mat-hint>
+          </mat-form-field>
+
+          <p class="field-wide relation-help">
+            Cadastre primeiro as <a routerLink="/marcas">marcas</a>, os
+            <a routerLink="/marcas">modelos</a> que precisar. O
+            <a routerLink="/fornecedores">fornecedor</a> pode ser informado depois.
+          </p>
+          @if (erroVinculos) {
+            <p class="field-wide feedback error" role="alert">{{ erroVinculos }}</p>
+          }
 
           <mat-form-field appearance="outline">
             <mat-label>Preço (R$)</mat-label>
@@ -197,6 +206,7 @@
         </div>
         <h3 class="preview-title">{{ nomePreview }}</h3>
         <p class="preview-category">{{ categoriaPreview }}</p>
+        <p class="preview-category">{{ marcaPreview }} · {{ modeloPreview }}</p>
         <p class="preview-price">{{ precoPreview }}</p>
         <div class="preview-stock">
           <span class="status-badge" [class.unavailable]="estoquePreview === 0">
@@ -216,6 +226,14 @@
             <div>
               <dt>Categoria</dt>
               <dd>{{ categoriaPreview }}</dd>
+            </div>
+            <div>
+              <dt>Marca / Modelo</dt>
+              <dd>{{ marcaPreview }} / {{ modeloPreview }}</dd>
+            </div>
+            <div>
+              <dt>Fornecedor</dt>
+              <dd>{{ fornecedorPreview }}</dd>
             </div>
             <div>
               <dt>Preço unitário</dt>
@@ -275,7 +293,7 @@
         type="submit"
         mat-flat-button
         class="primary-button"
-        [disabled]="ocupado || cadastrandoCategoria || carregandoImagem()"
+        [disabled]="ocupado || carregandoImagem() || carregandoVinculos"
       >
         <mat-icon svgIcon="save"></mat-icon
         >{{ salvando ? 'Salvando…' : editando ? 'Salvar alterações' : 'Salvar produto' }}

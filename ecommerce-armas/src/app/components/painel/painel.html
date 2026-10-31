@@ -1,0 +1,64 @@
+<header class="page-heading">
+  <div>
+    <span class="eyebrow">VISÃO GERAL</span>
+    <h1>Olá, {{ auth.usuario()?.nome || 'bem-vindo' }}</h1>
+    <p>{{ auth.usuario()?.perfil === 'ADMIN' ? 'Acompanhe a operação da loja.' : 'Acompanhe sua conta e seus pedidos.' }}</p>
+  </div>
+</header>
+
+@if (carregando) { <div class="panel panel-loading" role="status">Carregando painel...</div> }
+@if (erro) { <div class="feedback error" role="alert">{{ erro }} <button mat-button (click)="carregar(auth.usuario()!.perfil)">Tentar novamente</button></div> }
+
+@if (resumoAdmin; as resumo) {
+  <section class="dashboard-grid" aria-label="Indicadores da loja">
+    <a class="panel dashboard-card" routerLink="/produtos"><span>Produtos cadastrados</span><strong>{{ resumo.produtos }}</strong><small>Ver catálogo administrativo →</small></a>
+    <a class="panel dashboard-card" routerLink="/produtos"><span>Sem estoque</span><strong>{{ resumo.semEstoque }}</strong><small>Conferir produtos →</small></a>
+    <a class="panel dashboard-card" routerLink="/clientes"><span>Clientes</span><strong>{{ resumo.clientes }}</strong><small>Ver cadastros →</small></a>
+    <a class="panel dashboard-card" routerLink="/pedidos"><span>Pedidos pendentes</span><strong>{{ resumo.pedidosPendentes }}</strong><small>Consultar pedidos →</small></a>
+    <a class="panel dashboard-card" routerLink="/pedidos"><span>Pedidos confirmados</span><strong>{{ resumo.pedidosConfirmados }}</strong><small>Ver histórico →</small></a>
+  </section>
+  <section class="panel dashboard-section">
+    <div class="panel-heading"><h2>Atalhos de gestão</h2></div>
+    <div class="dashboard-links">
+      <a mat-stroked-button class="secondary-button" routerLink="/produtos/new">Cadastrar produto</a>
+      <a mat-stroked-button class="secondary-button" routerLink="/clientes/new">Cadastrar cliente</a>
+      <a mat-stroked-button class="secondary-button" routerLink="/pedidos">Gerenciar pedidos</a>
+    </div>
+  </section>
+}
+
+@if (resumoCliente; as resumo) {
+  <section class="dashboard-grid" aria-label="Resumo da conta">
+    <article class="panel dashboard-card"><span>Meus pedidos</span><strong>{{ resumo.pedidos }}</strong><small>Pedidos vinculados ao seu cadastro</small></article>
+    <article class="panel dashboard-card"><span>Aguardando confirmação</span><strong>{{ resumo.pendentes }}</strong><small>Pedidos pendentes</small></article>
+  </section>
+  <div class="customer-grid">
+    <section class="panel dashboard-section">
+      <div class="panel-heading"><h2>Pedidos recentes</h2></div>
+      @if (resumo.recentes.length) {
+        <div class="dashboard-orders">
+          @for (pedido of resumo.recentes; track pedido.id) {
+            <article class="dashboard-order">
+              <div><strong>Pedido #{{ pedido.id }}</strong><small>{{ pedido.criadoEm | date:'dd/MM/yyyy HH:mm' }}</small></div>
+              <span class="order-status" [class.confirmed]="pedido.status === 'CONFIRMADO'" [class.cancelled]="pedido.status === 'CANCELADO'">{{ pedido.status }}</span>
+              <strong>{{ pedido.total | currency:'BRL' }}</strong>
+              <details><summary>Ver itens</summary><ul>@for (item of pedido.itens; track item.produtoId) { <li>{{ item.quantidade }} × {{ item.nomeProduto }}</li> }</ul></details>
+            </article>
+          }
+        </div>
+      } @else { <p class="dashboard-empty">Você ainda não possui pedidos.</p> }
+    </section>
+    <aside class="panel dashboard-section">
+      <div class="panel-heading"><h2>Meu perfil</h2></div>
+      <div class="profile-summary">
+        @if (cliente?.fotoUrl) { <img class="profile-photo" src="http://localhost:8080/auth/me/foto" alt="Foto de perfil" /> }
+        @else { <span class="profile-photo profile-placeholder"><mat-icon svgIcon="person_outline"></mat-icon></span> }
+        <strong>{{ cliente?.nome || auth.usuario()?.nome }}</strong>
+        <span>{{ cliente?.email || auth.usuario()?.email }}</span>
+        @if (cliente?.telefone) { <span>{{ cliente?.telefone }}</span> }
+        @if (cliente?.endereco) { <p>{{ cliente?.endereco }}</p> }
+        <a mat-stroked-button class="secondary-button" routerLink="/perfil">Editar meu perfil</a>
+      </div>
+    </aside>
+  </div>
+}

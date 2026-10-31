@@ -11,6 +11,13 @@ import { ProdutoService } from '../../../services/produto.service';
 import { CategoriaService } from '../../../services/categoria.service';
 import { Categoria } from '../../../models/categoria.model';
 import { Produto, ProdutoRequest } from '../../../models/produto.model';
+import { MarcaService } from '../../../services/marca.service';
+import { ModeloService } from '../../../services/modelo.service';
+import { FornecedorService } from '../../../services/fornecedor.service';
+import { Marca } from '../../../models/marca.model';
+import { Modelo } from '../../../models/modelo.model';
+import { Fornecedor } from '../../../models/fornecedor.model';
+import { forkJoin, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-produto-form',
@@ -31,12 +38,17 @@ import { Produto, ProdutoRequest } from '../../../models/produto.model';
 export class ProdutoForm implements OnInit, OnDestroy {
   formGroup!: FormGroup;
   categorias: Categoria[] = [];
-  erroCategoria = '';
+  marcas: Marca[] = [];
+  modelos: Modelo[] = [];
+  fornecedores: Fornecedor[] = [];
+  erroVinculos = '';
   erro = '';
   salvando = false;
   excluindo = false;
-  cadastrandoCategoria = false;
   carregandoCategorias = true;
+  carregandoVinculos = false;
+  private alteracaoMarca?: Subscription;
+  private consultaVinculos?: Subscription;
   readonly imagemPreview = signal<string | null>(null);
   readonly nomeImagem = signal('');
   readonly erroImagem = signal('');
@@ -53,6 +65,9 @@ export class ProdutoForm implements OnInit, OnDestroy {
     private formBuilder: FormBuilder,
     private produtoService: ProdutoService,
     private categoriaService: CategoriaService,
+    private marcaService: MarcaService,
+    private modeloService: ModeloService,
+    private fornecedorService: FornecedorService,
     private router: Router,
     private activatedRoute: ActivatedRoute,
   ) {}
@@ -81,6 +96,21 @@ export class ProdutoForm implements OnInit, OnDestroy {
     return this.moeda.format(Number.isFinite(preco) ? Math.max(0, preco) : 0);
   }
 
+  get marcaPreview(): string {
+    const id = Number(this.formGroup?.get('marcaId')?.value);
+    return this.marcas.find((marca) => marca.id === id)?.nome || 'Selecione uma marca';
+  }
+
+  get modeloPreview(): string {
+    const id = Number(this.formGroup?.get('modeloId')?.value);
+    return this.modelos.find((modelo) => modelo.id === id)?.nome || 'Selecione um modelo';
+  }
+
+  get fornecedorPreview(): string {
+    const id = Number(this.formGroup?.get('fornecedorId')?.value);
+    return this.fornecedores.find((fornecedor) => fornecedor.id === id)?.nome || 'Não informado';
+  }
+
   get estoquePreview(): number {
     const estoque = Number(this.formGroup?.get('estoque')?.value);
     return Number.isFinite(estoque) ? Math.max(0, Math.trunc(estoque)) : 0;
@@ -101,7 +131,26 @@ export class ProdutoForm implements OnInit, OnDestroy {
         [Validators.required, Validators.min(0), Validators.pattern(/^\d+$/)],
       ],
       categoriaId: [produto?.categoriaId ?? null, Validators.required],
+      marcaId: [produto?.marcaId ?? null, Validators.required],
+      modeloId: [produto?.modeloId ?? null, Validators.required],
+      fornecedorId: [produto?.fornecedorId ?? null],
     });
+
+    this.marcaService.listar().subscribe({
+      next: (marcas) => {
+        this.marcas = marcas;
+        this.changeDetector.markForCheck();
+      },
+      error: () => {
+        this.erroVinculos = 'Não foi possível carregar as marcas. Verifique o servidor.';
+        this.changeDetector.markForCheck();
+      },
+    });
+    this.alteracaoMarca = this.formGroup.get('marcaId')?.valueChanges.subscribe((id) => {
+      this.formGroup.patchValue({ modeloId: null, fornecedorId: null }, { emitEvent: false });
+      this.carregarVinculos(id);
+    });
+    if (produto?.marcaId) this.carregarVinculos(produto.marcaId);
 
     this.categoriaService.listar().subscribe({
       next: (categorias) => {
@@ -111,7 +160,7 @@ export class ProdutoForm implements OnInit, OnDestroy {
       },
       error: () => {
         this.carregandoCategorias = false;
-        this.erroCategoria =
+        this.erro =
           'Não foi possível carregar as categorias. Verifique se o servidor está em execução e atualize a página.';
         this.changeDetector.markForCheck();
       },
@@ -120,6 +169,33 @@ export class ProdutoForm implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.imagemOperacao++;
+    this.alteracaoMarca?.unsubscribe();
+    this.consultaVinculos?.unsubscribe();
+  }
+
+  private carregarVinculos(marcaId: number | null): void {
+    this.consultaVinculos?.unsubscribe();
+    this.modelos = [];
+    this.fornecedores = [];
+    this.erroVinculos = '';
+    this.carregandoVinculos = !!marcaId;
+    if (!marcaId) return;
+    this.consultaVinculos = forkJoin({
+      modelos: this.modeloService.listar(Number(marcaId)),
+      fornecedores: this.fornecedorService.listar(Number(marcaId)),
+    }).subscribe({
+      next: ({ modelos, fornecedores }) => {
+        this.modelos = modelos;
+        this.fornecedores = fornecedores;
+        this.carregandoVinculos = false;
+        this.changeDetector.markForCheck();
+      },
+      error: () => {
+        this.erroVinculos = 'Não foi possível carregar modelos e fornecedores desta marca.';
+        this.carregandoVinculos = false;
+        this.changeDetector.markForCheck();
+      },
+    });
   }
 
   async selecionarImagem(event: Event): Promise<void> {
@@ -193,39 +269,6 @@ export class ProdutoForm implements OnInit, OnDestroy {
     });
   }
 
-  adicionarCategoria(input: HTMLInputElement): void {
-    if (this.cadastrandoCategoria || this.ocupado) return;
-
-    const nome = input.value.trim();
-    if (!nome) {
-      this.erroCategoria = 'Informe o nome da nova categoria.';
-      input.focus();
-      return;
-    }
-
-    this.erroCategoria = '';
-    this.cadastrandoCategoria = true;
-    this.categoriaService.cadastrar(nome).subscribe({
-      next: (categoria) => {
-        this.categorias = [...this.categorias, categoria].sort((a, b) =>
-          a.nome.localeCompare(b.nome),
-        );
-        this.formGroup.patchValue({ categoriaId: categoria.id });
-        input.value = '';
-        this.cadastrandoCategoria = false;
-        this.changeDetector.markForCheck();
-      },
-      error: (erro) => {
-        this.erroCategoria =
-          erro.status === 409
-            ? 'Essa categoria já existe. Selecione-a na lista.'
-            : 'Não foi possível cadastrar a categoria. Tente novamente.';
-        this.cadastrandoCategoria = false;
-        this.changeDetector.markForCheck();
-      },
-    });
-  }
-
   limpar(): void {
     if (this.ocupado) return;
     const id = this.formGroup.get('id')?.value;
@@ -236,13 +279,16 @@ export class ProdutoForm implements OnInit, OnDestroy {
       preco: null,
       estoque: null,
       categoriaId: null,
+      marcaId: null,
+      modeloId: null,
+      fornecedorId: null,
     });
     this.erro = '';
     this.retirarImagem();
   }
 
   salvar(): void {
-    if (this.ocupado || this.cadastrandoCategoria || this.carregandoImagem()) return;
+    if (this.ocupado || this.carregandoImagem() || this.carregandoVinculos) return;
     this.erro = '';
     if (this.formGroup.invalid) {
       this.formGroup.markAllAsTouched();
@@ -257,6 +303,8 @@ export class ProdutoForm implements OnInit, OnDestroy {
       preco: Number(valores.preco),
       estoque: Number(valores.estoque),
       categoriaId: Number(valores.categoriaId),
+      modeloId: Number(valores.modeloId),
+      fornecedorId: valores.fornecedorId ? Number(valores.fornecedorId) : null,
     };
     if (this.imagemBase64) {
       produto.imagemBase64 = this.imagemBase64;
@@ -291,8 +339,8 @@ export class ProdutoForm implements OnInit, OnDestroy {
       this.excluindo = true;
       this.produtoService.excluir(id).subscribe({
         next: () => this.router.navigate(['/produtos']),
-        error: () => {
-          this.erro = 'Não foi possível excluir o produto. Tente novamente.';
+        error: (resposta) => {
+          this.erro = resposta.error?.mensagem ?? 'Não foi possível excluir o produto. Tente novamente.';
           this.excluindo = false;
           this.changeDetector.markForCheck();
         },

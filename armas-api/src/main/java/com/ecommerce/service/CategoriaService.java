@@ -8,4 +8,8 @@ public interface CategoriaService {
     List<CategoriaResponseDTO> listar();
 
     CategoriaResponseDTO cadastrar(CategoriaRequestDTO dados);
+
+    CategoriaResponseDTO editar(Long id, CategoriaRequestDTO dados);
+
+    void excluir(Long id);
 }

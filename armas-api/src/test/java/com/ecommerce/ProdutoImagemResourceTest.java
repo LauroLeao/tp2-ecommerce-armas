@@ -33,15 +33,17 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 @QuarkusTest
+@io.quarkus.test.security.TestSecurity(user = "admin@teste.local", roles = "ADMIN")
 class ProdutoImagemResourceTest {
 
     @Test
     void deveCadastrarPreservarSubstituirRemoverEExcluirImagemSemOrfaos() throws IOException {
         long imagensAntes = contarImagens();
         long categoriaId = criarCategoria("Categoria Imagem Ciclo");
+        long[] vinculos = criarVinculos("Imagem Ciclo");
         byte[] png = imagem("png");
         byte[] jpeg = imagem("jpeg");
-        Map<String, Object> cadastro = dados(categoriaId, "Produto imagem ciclo");
+        Map<String, Object> cadastro = dados(categoriaId, vinculos, "Produto imagem ciclo");
         cadastro.put("imagemBase64", dataUrl("png", png));
         Response criado = given().contentType(ContentType.JSON).body(cadastro)
                 .when().post("/produtos")
@@ -64,7 +66,7 @@ class ProdutoImagemResourceTest {
             assertFalse(item.containsKey("imagem"));
             assertFalse(item.containsKey("conteudo"));
 
-            Map<String, Object> edicao = dados(categoriaId, "Produto imagem ciclo atualizado");
+            Map<String, Object> edicao = dados(categoriaId, vinculos, "Produto imagem ciclo atualizado");
             given().contentType(ContentType.JSON).body(edicao)
                     .when().put("/produtos/{id}", produtoId)
                     .then().statusCode(200).body("imagemUrl", equalTo(primeiraUrl));
@@ -112,8 +114,9 @@ class ProdutoImagemResourceTest {
     @Test
     void deveRejeitarImagensInvalidasSemAlterarProdutoOuImagemAnterior() throws IOException {
         long categoriaId = criarCategoria("Categoria Imagem Validacao");
+        long[] vinculos = criarVinculos("Imagem Validacao");
         byte[] png = imagem("png");
-        Map<String, Object> cadastro = dados(categoriaId, "Produto imagem preservada");
+        Map<String, Object> cadastro = dados(categoriaId, vinculos, "Produto imagem preservada");
         cadastro.put("imagemBase64", dataUrl("png", png));
         Response criado = given().contentType(ContentType.JSON).body(cadastro)
                 .when().post("/produtos")
@@ -135,13 +138,13 @@ class ProdutoImagemResourceTest {
                     dataUrl("png", new byte[5 * 1024 * 1024 + 1]));
 
             for (String invalida : invalidas) {
-                Map<String, Object> edicao = dados(categoriaId, "Alteracao que deve ser rejeitada");
+                Map<String, Object> edicao = dados(categoriaId, vinculos, "Alteracao que deve ser rejeitada");
                 edicao.put("imagemBase64", invalida);
                 rejeitarEdicao(produtoId, edicao);
                 verificarProdutoPreservado(produtoId, imagemUrl);
             }
 
-            Map<String, Object> conflito = dados(categoriaId, "Remocao conflitante");
+            Map<String, Object> conflito = dados(categoriaId, vinculos, "Remocao conflitante");
             conflito.put("imagemBase64", dataUrl("png", png));
             conflito.put("removerImagem", true);
             rejeitarEdicao(produtoId, conflito);
@@ -150,7 +153,7 @@ class ProdutoImagemResourceTest {
             assertEquals(imagensAntes, contarImagens());
 
             long produtosAntes = contarProdutos();
-            Map<String, Object> criacaoInvalida = dados(categoriaId, "Criacao rejeitada");
+            Map<String, Object> criacaoInvalida = dados(categoriaId, vinculos, "Criacao rejeitada");
             criacaoInvalida.put("imagemBase64", dataUrl("png", new byte[] {1, 2, 3}));
             given().contentType(ContentType.JSON).body(criacaoInvalida)
                     .when().post("/produtos")
@@ -202,13 +205,15 @@ class ProdutoImagemResourceTest {
         return Long.parseLong(url.substring(url.lastIndexOf('=') + 1));
     }
 
-    private Map<String, Object> dados(long categoriaId, String nome) {
+    private Map<String, Object> dados(long categoriaId, long[] vinculos, String nome) {
         Map<String, Object> dados = new LinkedHashMap<>();
         dados.put("nome", nome);
         dados.put("descricao", "Imagem no cadastro de produto");
         dados.put("preco", 150.0);
         dados.put("estoque", 2);
         dados.put("categoriaId", categoriaId);
+        dados.put("modeloId", vinculos[0]);
+        dados.put("fornecedorId", vinculos[1]);
         return dados;
     }
 
@@ -216,6 +221,19 @@ class ProdutoImagemResourceTest {
         return given().contentType(ContentType.JSON).body(Map.of("nome", nome))
                 .when().post("/categorias")
                 .then().statusCode(201).extract().jsonPath().getLong("id");
+    }
+
+    private long[] criarVinculos(String sufixo) {
+        long marcaId = given().contentType(ContentType.JSON).body(Map.of("nome", "Marca " + sufixo))
+                .when().post("/marcas").then().statusCode(201).extract().jsonPath().getLong("id");
+        long modeloId = given().contentType(ContentType.JSON)
+                .body(Map.of("nome", "Modelo " + sufixo, "marcaId", marcaId))
+                .when().post("/modelos").then().statusCode(201).extract().jsonPath().getLong("id");
+        long fornecedorId = given().contentType(ContentType.JSON)
+                .body(Map.of("nome", "Fornecedor " + sufixo, "email", sufixo.replace(' ', '-').toLowerCase()
+                        + "@teste.com", "telefone", "11999999999", "marcaId", marcaId))
+                .when().post("/fornecedores").then().statusCode(201).extract().jsonPath().getLong("id");
+        return new long[] { modeloId, fornecedorId };
     }
 
     private byte[] imagem(String formato) throws IOException {

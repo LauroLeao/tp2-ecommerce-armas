@@ -44,6 +44,10 @@ export class ClienteList implements OnInit {
       : '?';
   }
 
+  fotoUrl(cliente: Cliente): string | null {
+    return this.clienteService.obterUrlFoto(cliente.fotoUrl);
+  }
+
   aplicarFiltro(event: Event): void {
     const filterValue = (event.target as HTMLInputElement).value;
     this.dataSource.filter = filterValue.trim().toLowerCase();
@@ -61,9 +65,9 @@ export class ClienteList implements OnInit {
         this.excluindoId = null;
         this.carregarClientes();
       },
-      error: () => {
+      error: (resposta) => {
         this.excluindoId = null;
-        this.erro = 'Não foi possível excluir o cliente. Tente novamente.';
+        this.erro = resposta.error?.mensagem ?? 'Não foi possível excluir o cliente. Tente novamente.';
         this.changeDetector.markForCheck();
       },
     });

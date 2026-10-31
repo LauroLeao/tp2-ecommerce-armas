@@ -2,48 +2,13 @@
   color: var(--text-muted);
   font-size: 12px;
 }
-.category-area {
-  margin: -6px 0 8px;
-}
-.category-details {
-  border: 1px solid var(--panel-border);
-  border-radius: 8px;
-  background: #121315;
-}
-.category-details summary {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 14px 16px;
-  font-size: 13px;
+.relation-help {
+  margin: -2px 0 8px;
   color: var(--text-muted);
-  cursor: pointer;
-  list-style: none;
+  font-size: 12px;
 }
-.category-details summary::-webkit-details-marker {
-  display: none;
-}
-.category-details summary:hover {
-  color: var(--text-main);
-}
-.category-details summary mat-icon {
-  width: 19px;
-  height: 19px;
-  font-size: 19px;
-  color: #e0444b;
-}
-.new-category {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 0 16px 16px;
-}
-.new-category mat-form-field {
-  min-width: 0;
-  flex: 1;
-}
-.category-feedback {
-  margin-bottom: 0;
+.relation-help a {
+  color: var(--red-text);
 }
 .description-field textarea {
   resize: vertical;
@@ -63,11 +28,11 @@
   place-items: center;
   border: 1px solid var(--panel-border);
   border-radius: 8px;
-  background: linear-gradient(135deg, #202125, #121315);
+  background: linear-gradient(135deg, var(--surface-table), var(--surface-field));
   margin-bottom: 22px;
 }
 .preview-placeholder mat-icon {
-  color: #56575d;
+  color: var(--text-quiet);
   font-size: 64px;
   width: 64px;
   height: 64px;
@@ -103,9 +68,9 @@
   gap: 18px;
   margin-top: 18px;
   padding: 18px;
-  border: 1px dashed #4b3a3e;
+  border: 1px dashed var(--outline-strong);
   border-radius: 6px;
-  background: #121315;
+  background: var(--surface-field);
 }
 .upload-thumbnail {
   display: grid;
@@ -114,9 +79,9 @@
   height: 86px;
   border-radius: 5px;
   border: 1px solid var(--panel-border);
-  background: #202125;
+  background: var(--surface-table);
   overflow: hidden;
-  color: #777a83;
+  color: var(--text-quiet);
 }
 .upload-thumbnail img {
   width: 100%;
@@ -130,7 +95,7 @@
   display: block;
   overflow-wrap: anywhere;
   font-size: 12px;
-  color: #dedee3;
+  color: var(--text-secondary);
 }
 .upload-actions {
   display: flex;
@@ -171,7 +136,7 @@
   overflow-wrap: anywhere;
 }
 .preview-price {
-  color: #ed424b;
+  color: var(--red-text);
   font-size: 26px;
   font-weight: 650;
   margin: 0 0 18px;
@@ -261,10 +226,6 @@
   }
   .product-footer .form-actions button {
     flex: 1 1 auto;
-  }
-  .new-category {
-    align-items: stretch;
-    flex-direction: column;
   }
   .preview-placeholder {
     height: 140px;

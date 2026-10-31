@@ -1,0 +1,186 @@
+<header class="page-heading">
+  <div>
+    <span class="eyebrow">ÁREA ADMINISTRATIVA</span>
+    <h1>Gerenciamento de {{ titulo.toLowerCase() }}</h1>
+    <p>
+      @if (tipo === 'categorias') { Organize os tipos de produtos exibidos no catálogo. }
+      @else if (tipo === 'marcas') { Selecione uma marca para cadastrar e consultar seus modelos. }
+      @else if (tipo === 'modelos') { Cadastre modelos e vincule cada um à sua marca. }
+      @else { Mantenha os fornecedores e a marca com que cada um trabalha. }
+    </p>
+  </div>
+</header>
+
+@if (erro) {
+  <p class="feedback error" role="alert">{{ erro }}</p>
+}
+@if (aviso) {
+  <p class="feedback success" role="status">{{ aviso }}</p>
+}
+
+<div class="catalog-layout">
+  <section class="panel catalog-list" [attr.aria-busy]="carregando">
+    <div class="table-toolbar">
+      <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
+        <mat-label>Buscar {{ singular }}</mat-label>
+        <mat-icon matPrefix svgIcon="search"></mat-icon>
+        <input matInput #buscaInput (input)="buscar(buscaInput.value)" placeholder="Buscar na lista" />
+      </mat-form-field>
+      <span class="catalog-count">{{ registros.length }} {{ titulo.toLowerCase() }} cadastrados</span>
+    </div>
+    <div class="table-scroll">
+      <table class="catalog-table">
+        <thead>
+          <tr>
+            <th>Código</th><th>Nome</th>
+            @if (tipo === 'modelos' || tipo === 'fornecedores') { <th>Marca</th> }
+            @if (tipo === 'marcas') { <th>Modelos</th> }
+            @if (tipo === 'fornecedores') { <th>Contato</th> }
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of filtrados; track item.id) {
+            <tr [class.selected]="formGroup.get('id')?.value === item.id">
+              <td class="muted">#{{ item.id }}</td>
+              <td class="name">{{ item.nome }}</td>
+              @if (tipo === 'modelos' || tipo === 'fornecedores') { <td>{{ item.marcaNome }}</td> }
+              @if (tipo === 'marcas') {
+                <td><button mat-stroked-button type="button" class="secondary-button" (click)="focarMarca(item)">Ver modelos</button></td>
+              }
+              @if (tipo === 'fornecedores') {
+                <td><span class="contact">{{ item.email }}<small>{{ item.telefone }}</small></span></td>
+              }
+              <td>
+                <div class="row-actions">
+                  <button mat-icon-button type="button" (click)="selecionar(item)"
+                    [attr.aria-label]="'Editar ' + item.nome" [title]="'Editar ' + item.nome">
+                    <mat-icon svgIcon="edit"></mat-icon>
+                  </button>
+                  <button mat-icon-button type="button" class="danger-button" (click)="excluir(item)"
+                    [disabled]="excluindoId === item.id"
+                    [attr.aria-label]="'Excluir ' + item.nome" [title]="'Excluir ' + item.nome">
+                    <mat-icon svgIcon="delete_outline"></mat-icon>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    @if (carregando) {
+      <div class="empty-state" role="status"><mat-icon svgIcon="hourglass_empty"></mat-icon><p>Carregando...</p></div>
+    } @else if (!filtrados.length) {
+      <div class="empty-state" role="status">
+        <mat-icon svgIcon="search_off"></mat-icon>
+        <h3>{{ registros.length ? 'Nenhum resultado encontrado' : 'Nenhum cadastro ainda' }}</h3>
+        <p>{{ registros.length ? 'Tente outro termo.' : 'Use o formulário para começar.' }}</p>
+      </div>
+    }
+    <div class="table-footer">{{ filtrados.length }} de {{ registros.length }} registros</div>
+  </section>
+
+  <aside class="panel catalog-editor">
+    <div class="panel-heading">
+      <div>
+        <span class="eyebrow">{{ editando ? 'EDIÇÃO' : 'NOVO CADASTRO' }}</span>
+        <h2 class="section-title">{{ editando ? 'Editar' : 'Cadastrar' }} {{ singular }}</h2>
+      </div>
+    </div>
+    <form [formGroup]="formGroup" (ngSubmit)="salvar()" class="panel-body">
+      <mat-form-field appearance="outline">
+        <mat-label>Nome</mat-label>
+        <input matInput formControlName="nome" [maxLength]="limiteNome" required />
+        <mat-error>Informe o nome.</mat-error>
+      </mat-form-field>
+
+      @if (tipo === 'modelos' || tipo === 'fornecedores') {
+        <mat-form-field appearance="outline">
+          <mat-label>Marca vinculada</mat-label>
+          <mat-select formControlName="marcaId" required>
+            @for (marca of marcas; track marca.id) {
+              <mat-option [value]="marca.id">{{ marca.nome }}</mat-option>
+            }
+          </mat-select>
+          <mat-error>Selecione uma marca.</mat-error>
+        </mat-form-field>
+        @if (!marcas.length) {
+          <p class="form-hint">Cadastre uma <a routerLink="/marcas">marca</a> antes de continuar.</p>
+        }
+      }
+
+      @if (tipo === 'fornecedores') {
+        <mat-form-field appearance="outline">
+          <mat-label>E-mail</mat-label>
+          <input matInput type="email" formControlName="email" maxlength="160" required />
+          <mat-error>Informe um e-mail válido.</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Telefone</mat-label>
+          <input matInput type="tel" formControlName="telefone" maxlength="11" (input)="somenteDigitos()" required />
+          <mat-hint>10 ou 11 números, com DDD</mat-hint>
+          <mat-error>Informe 10 ou 11 números.</mat-error>
+        </mat-form-field>
+      }
+
+      <div class="editor-actions">
+        @if (editando) {
+          <button mat-stroked-button type="button" class="secondary-button" (click)="novo()">Cancelar edição</button>
+        }
+        <button mat-flat-button type="submit" class="primary-button" [disabled]="salvando || excluindoId !== null">
+          <mat-icon svgIcon="save"></mat-icon>{{ salvando ? 'Salvando…' : editando ? 'Salvar alterações' : 'Cadastrar' }}
+        </button>
+      </div>
+    </form>
+  </aside>
+</div>
+
+@if (tipo === 'marcas') {
+  <section class="panel models-panel" aria-label="Modelos da marca selecionada">
+    <div class="panel-heading">
+      <div>
+        <span class="eyebrow">CATÁLOGO</span>
+        <h2 class="section-title">Modelos {{ marcaEmFoco ? 'de ' + marcaEmFoco.nome : 'da marca' }}</h2>
+      </div>
+    </div>
+    @if (!marcaEmFoco) {
+      <div class="panel-body"><p class="form-hint">Selecione uma marca em “Ver modelos” para administrar seus modelos aqui.</p></div>
+    } @else {
+      <div class="models-layout panel-body">
+        <div class="table-scroll">
+          <table class="catalog-table">
+            <thead><tr><th>Código</th><th>Modelo</th><th>Ações</th></tr></thead>
+            <tbody>
+              @for (modelo of modelosDaMarca; track modelo.id) {
+                <tr>
+                  <td class="muted">#{{ modelo.id }}</td>
+                  <td class="name">{{ modelo.nome }}</td>
+                  <td><div class="row-actions">
+                    <button mat-icon-button type="button" (click)="selecionarModelo(modelo)" [attr.aria-label]="'Editar modelo ' + modelo.nome"><mat-icon svgIcon="edit"></mat-icon></button>
+                    <button mat-icon-button type="button" class="danger-button" (click)="excluirModelo(modelo)" [disabled]="excluindoModeloId === modelo.id" [attr.aria-label]="'Excluir modelo ' + modelo.nome"><mat-icon svgIcon="delete_outline"></mat-icon></button>
+                  </div></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+          @if (carregandoModelos) { <p class="form-hint">Carregando modelos...</p> }
+          @else if (!modelosDaMarca.length) { <p class="form-hint">Esta marca ainda não possui modelos.</p> }
+        </div>
+        <form [formGroup]="modeloForm" (ngSubmit)="salvarModelo()" class="model-editor">
+          <h3>{{ modeloForm.get('id')?.value ? 'Editar modelo' : 'Novo modelo' }}</h3>
+          <p class="form-hint">Vinculado a {{ marcaEmFoco.nome }}.</p>
+          <mat-form-field appearance="outline">
+            <mat-label>Nome do modelo</mat-label>
+            <input matInput formControlName="nome" maxlength="100" required />
+            <mat-error>Informe o nome do modelo.</mat-error>
+          </mat-form-field>
+          <div class="editor-actions">
+            @if (modeloForm.get('id')?.value) { <button mat-stroked-button type="button" class="secondary-button" (click)="novoModelo()">Cancelar edição</button> }
+            <button mat-flat-button type="submit" class="primary-button" [disabled]="salvandoModelo">{{ salvandoModelo ? 'Salvando…' : 'Salvar modelo' }}</button>
+          </div>
+        </form>
+      </div>
+    }
+  </section>
+}
